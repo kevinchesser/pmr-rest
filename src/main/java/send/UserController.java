@@ -55,9 +55,17 @@ public class UserController{
 	}
 		
 		
+		@RequestMapping(value="login")
+		public ResponseEntity<String> login(@RequestParam(value="userName", required=true) String userName){
+			
+			ResponseEntity responseEntity = new ResponseEntity<>("", HttpStatus.OK);
+			return responseEntity;
+		}
 		
-		
-		
-		
-		
+		@RequestMapping(value="recover")
+		public ResponseEntity<String> recover(@RequestParam(value="email", required=true) String userName){
+			
+			ResponseEntity responseEntity = new ResponseEntity<>("", HttpStatus.OK);
+			return responseEntity;
+		}
 }
