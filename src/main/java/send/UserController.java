@@ -27,6 +27,9 @@ public class UserController{
 			Connection connection = null;
 			ResultSet resultSet = null;
 			Statement statement = null;
+
+			
+			
 			
 			try{
 				String url = "jdbc:sqlite:/var/db/pmr.db";
