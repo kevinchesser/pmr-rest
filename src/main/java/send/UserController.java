@@ -113,7 +113,7 @@ public class UserController{
 			return responseEntity;
 		}
 		
-		@RequestMapping(value="recover")
+		@RequestMapping(value="reset")
 		public ResponseEntity<String> recover(@RequestParam(value="email", required=true) String email){
 			boolean success = false;
 			Connection connection = null;
