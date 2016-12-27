@@ -6,6 +6,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.sendgrid.*;
+import java.io.IOException;
+
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -68,7 +72,7 @@ public class UserController{
 	}
 		
 		
-		@RequestMapping(value="login")
+		@RequestMapping(value="/login")
 		public ResponseEntity<String> login(@RequestParam(value="userName", required=true) String userName,
 				@RequestParam(value="passHash", required=true) String passHash,
 				@RequestParam(value="passSalt", required=true) String passSalt){
@@ -113,12 +117,13 @@ public class UserController{
 			return responseEntity;
 		}
 		
-		@RequestMapping(value="reset")
-		public ResponseEntity<String> recover(@RequestParam(value="email", required=true) String email){
+		@RequestMapping(value="/reset")
+		public ResponseEntity<String> recover(@RequestParam(value="email", required=true) String email) throws IOException {
 			boolean success = false;
 			Connection connection = null;
 			ResultSet resultSet = null;
 			Statement statement = null;
+			
 			try{
 				String url = "jdbc:sqlite:/var/db/pmr.db";
 				connection = DriverManager.getConnection(url);
@@ -148,6 +153,26 @@ public class UserController{
 
 			ResponseEntity responseEntity;
 			if(success){
+			
+				Email from = new Email("pmridontcareifyourespond@gmail.com");
+				String subject = "PMR Password reset request";
+				Email to = new Email(email);
+				Content content = new Content("text/plain", "Hello, please click this link to take you to a password reset page\nsomelink");
+				Mail mail = new Mail(from, subject, to, content);
+
+				SendGrid sg = new SendGrid("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");
+				Request request = new Request();
+				try {
+				  request.method = Method.POST;
+				  request.endpoint = "mail/send";
+				  request.body = mail.build();
+				  Response response = sg.api(request);
+				  System.out.println(response.statusCode);
+				  System.out.println(response.body);
+				  System.out.println(response.headers);
+				} catch (IOException ex) {
+				  throw ex;
+				}
 				responseEntity = new ResponseEntity<>("true", HttpStatus.OK);
 				System.out.println("Sending recovery email to " + email);
 			}
