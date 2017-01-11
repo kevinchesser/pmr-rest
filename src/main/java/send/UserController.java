@@ -176,7 +176,7 @@ public class UserController{
 				Email from = new Email("");
 				String subject = "PMR Password reset request";
 				//Email to = new Email(email);
-				Email to = new Email("kevin.chesser94@gmail.com");
+				Email to = new Email("");
 				Content content = new Content("text/plain", "Hello, please click this link to take you to a password reset page"
 						+ "\npmr.com/resetpassword?token=" + resetToken);
 				Mail mail = new Mail(from, subject, to, content);
