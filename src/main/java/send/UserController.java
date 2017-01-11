@@ -176,7 +176,7 @@ public class UserController{
 				Email from = new Email("");
 				String subject = "PMR Password reset request";
 				//Email to = new Email(email);
-				Email to = new Email("");
+				Email to = new Email("com");
 				Content content = new Content("text/plain", "Hello, please click this link to take you to a password reset page"
 						+ "\npmr.com/resetpassword?token=" + resetToken);
 				Mail mail = new Mail(from, subject, to, content);
@@ -207,6 +207,53 @@ public class UserController{
 		}
 		
 		
+		@RequestMapping(value="/retrievePlayers") //Encode into UTF-8
+		public ResponseEntity<String> login(){
+			boolean success = false;
+		
+			Connection connection = null;
+			ResultSet resultSet = null;
+			Statement statement = null;
+			try{
+//				String url = "jdbc:sqlite:/var/db/pmr.db";
+				String url = "jdbc:sqlite:../server/db/pmr.db";
+				connection = DriverManager.getConnection(url);
+				String sql = "Select * from Teams;";
+				System.out.println(sql);
+				statement = connection.createStatement();
+				resultSet = statement.executeQuery(sql);
+				if(resultSet.next()){
+					success = true;
+				} else{
+					success = false;
+				}
+				System.out.println("Connection successful");
+			} catch (SQLException e){
+				System.out.println(e.getMessage());
+			} finally {
+				try{
+					if (connection != null){
+						resultSet.close();
+						statement.close();
+						connection.close();
+					}
+				} catch (SQLException ex) {
+					System.out.println(ex.getMessage());
+				}
+			}
+
+			ResponseEntity responseEntity;
+			if(success)
+				responseEntity = new ResponseEntity<>("true", HttpStatus.OK);
+			else
+				responseEntity = new ResponseEntity<>("false", HttpStatus.OK);
+
+			return responseEntity;
+		}
+		
+		
+		
+		
 		public void updateResetToken(String email, String token, String timeExpiration){
 			Connection connection = null;
 			Statement statement = null;
@@ -216,7 +263,7 @@ public class UserController{
 				//String url = "jdbc:sqlite:/var/db/pmr.db";
 				String url = "jdbc:sqlite:../server/db/pmr.db";
 				connection = DriverManager.getConnection(url);
-				String sql = " UPDATE User SET ResetToken = ?, ResetExpiration = ? WHERE Email = ?";
+				String sql = "UPDATE User SET ResetToken = ? , ResetExpiration = ? WHERE Email = ?";
 				System.out.println(sql);
 				PreparedStatement preparedStatement = connection.prepareStatement(sql);
 				preparedStatement.setString(1, token);
@@ -226,7 +273,7 @@ public class UserController{
 				System.out.println("Connection successful");
 			} catch (SQLException e){
 				System.out.println(e.getMessage());
-			} finally {
+			} /*finally {
 				try{
 					if (connection != null){
 						connection.close();
@@ -234,7 +281,7 @@ public class UserController{
 				} catch (SQLException ex) {
 					System.out.println(ex.getMessage());
 				}
-			}
+			}*/
 			
 		}
 }
