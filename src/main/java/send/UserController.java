@@ -5,6 +5,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.abstractj.kalium.*;
+import org.abstractj.kalium.crypto.Hash;
+import org.abstractj.kalium.encoders.Encoder;
+import org.abstractj.kalium.encoders.Hex;
+import org.abstractj.kalium.encoders.Raw;
 
 import com.sendgrid.*;
 import java.io.IOException;
@@ -31,14 +36,13 @@ public class UserController{
 			Connection connection = null;
 			ResultSet resultSet = null;
 			Statement statement = null;
-
-			
-			
 			
 			try{
-				String url = "jdbc:sqlite:/var/db/pmr.db";
+				//String url = "jdbc:sqlite:/var/db/pmr.db";
+				String url = "jdbc:sqlite:../server/db/pmr.db";
 				connection = DriverManager.getConnection(url);
-				String sql = "INSERT INTO User(Username, Email, PasswordHash, PasswordSalt, PhoneNumber, Keywords) VALUES(?,?,?,?,?,?)";
+				String sql = "INSERT INTO User(Username, Email, PasswordHash, PasswordSalt, PhoneNumber, Keywords, "
+						+ "ResetToken, ResetExpiration) VALUES(?,?,?,?,?,?,?,?)";
 				PreparedStatement preparedStatement = connection.prepareStatement(sql);
 				preparedStatement.setString(1, userName);
 				preparedStatement.setString(2, email);
@@ -46,6 +50,8 @@ public class UserController{
 				preparedStatement.setString(4, passSalt);
 				preparedStatement.setString(5, phoneNumber);
 				preparedStatement.setString(6, "");
+				preparedStatement.setString(7, "");
+				preparedStatement.setString(8, "");
 				preparedStatement.executeUpdate(); //Need to do something when we try to insert a username/email that already exists
 				success = true;
 				System.out.println("Connection successful");
@@ -82,7 +88,8 @@ public class UserController{
 			ResultSet resultSet = null;
 			Statement statement = null;
 			try{
-				String url = "jdbc:sqlite:/var/db/pmr.db";
+//				String url = "jdbc:sqlite:/var/db/pmr.db";
+				String url = "jdbc:sqlite:../server/db/pmr.db";
 				connection = DriverManager.getConnection(url);
 				String sql = "Select * from User WHERE Username='" + userName + "' AND PasswordHash='" + passHash + "' AND PasswordSalt='" + passSalt + "';";
 				System.out.println(sql);
@@ -125,9 +132,10 @@ public class UserController{
 			Statement statement = null;
 			
 			try{
-				String url = "jdbc:sqlite:/var/db/pmr.db";
+				//String url = "jdbc:sqlite:/var/db/pmr.db";
+				String url = "jdbc:sqlite:../server/db/pmr.db";
 				connection = DriverManager.getConnection(url);
-				String sql = "Select * from User WHERE Email='" + email + "';";
+				String sql = "Select * from User WHERE Email=" + email + ";";
 				System.out.println(sql);
 				statement = connection.createStatement();
 				resultSet = statement.executeQuery(sql);
@@ -153,15 +161,29 @@ public class UserController{
 
 			ResponseEntity responseEntity;
 			if(success){
-			
-				Email from = new Email("pmridontcareifyourespond@gmail.com");
-				String subject = "PMR Password reset request";
-				Email to = new Email(email);
-				Content content = new Content("text/plain", "Hello, please click this link to take you to a password reset page\nsomelink");
-				Mail mail = new Mail(from, subject, to, content);
+				ResetIdentifierGenerator resetIdentifierGenerator = new ResetIdentifierGenerator();
+				String resetToken = resetIdentifierGenerator.nextSessionId();
+				long time = System.nanoTime() + 180000000000L;  //add thirty minutes in nanoseconds
+				String timeString = Long.toString(time);
+				System.out.println(resetToken + " " + timeString);
+				updateResetToken(email, resetToken, timeString);
 
-				SendGrid sg = new SendGrid("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");
+				/*Hash hash = new Hash();
+				Hex hex = new Hex();
+				String hashedToken = hash.sha256(resetToken, hex);
+				*/
+				
+				Email from = new Email("");
+				String subject = "PMR Password reset request";
+				//Email to = new Email(email);
+				Email to = new Email("kevin.chesser94@gmail.com");
+				Content content = new Content("text/plain", "Hello, please click this link to take you to a password reset page"
+						+ "\npmr.com/resetpassword?token=" + resetToken);
+				Mail mail = new Mail(from, subject, to, content);
+				SendGrid sg = new SendGrid("");
 				Request request = new Request();
+				
+
 				try {
 				  request.method = Method.POST;
 				  request.endpoint = "mail/send";
@@ -182,5 +204,37 @@ public class UserController{
 			}	
 			
 			return responseEntity;
+		}
+		
+		
+		public void updateResetToken(String email, String token, String timeExpiration){
+			Connection connection = null;
+			Statement statement = null;
+			System.out.println(email + " " + token + " " + timeExpiration);
+			
+			try{
+				//String url = "jdbc:sqlite:/var/db/pmr.db";
+				String url = "jdbc:sqlite:../server/db/pmr.db";
+				connection = DriverManager.getConnection(url);
+				String sql = " UPDATE User SET ResetToken = ?, ResetExpiration = ? WHERE Email = ?";
+				System.out.println(sql);
+				PreparedStatement preparedStatement = connection.prepareStatement(sql);
+				preparedStatement.setString(1, token);
+				preparedStatement.setString(2, timeExpiration);
+				preparedStatement.setString(3, email);
+				preparedStatement.executeUpdate(); //Need to do something when we try to insert a username/email that already exists
+				System.out.println("Connection successful");
+			} catch (SQLException e){
+				System.out.println(e.getMessage());
+			} finally {
+				try{
+					if (connection != null){
+						connection.close();
+					}
+				} catch (SQLException ex) {
+					System.out.println(ex.getMessage());
+				}
+			}
+			
 		}
 }
