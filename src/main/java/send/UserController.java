@@ -119,7 +119,7 @@ public class UserController{
 
 			ResponseEntity responseEntity;
 			if(success)
-				responseEntity = new ResponseEntity<>("true", HttpStatus.OK);
+				responseEntity = new ResponseEntity<>(userName, HttpStatus.OK);
 			else
 				responseEntity = new ResponseEntity<>("false", HttpStatus.OK);
 
