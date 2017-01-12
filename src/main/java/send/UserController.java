@@ -10,6 +10,7 @@ import org.abstractj.kalium.crypto.Hash;
 import org.abstractj.kalium.encoders.Encoder;
 import org.abstractj.kalium.encoders.Hex;
 import org.abstractj.kalium.encoders.Raw;
+import com.google.gson.*;
 
 import com.sendgrid.*;
 import java.io.IOException;
@@ -21,6 +22,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 
 @RestController
 public class UserController{
@@ -210,20 +212,31 @@ public class UserController{
 		@RequestMapping(value="/retrievePlayers") //Encode into UTF-8
 		public ResponseEntity<String> login(){
 			boolean success = false;
-		
+			PlayerList playerList = new PlayerList();
+			ArrayList<Player> players = new ArrayList<Player>();
 			Connection connection = null;
 			ResultSet resultSet = null;
 			Statement statement = null;
+			
+			
 			try{
 //				String url = "jdbc:sqlite:/var/db/pmr.db";
 				String url = "jdbc:sqlite:../server/db/pmr.db";
 				connection = DriverManager.getConnection(url);
-				String sql = "Select * from Teams;";
-				System.out.println(sql);
+				String sql = "Select * from Player;";
 				statement = connection.createStatement();
 				resultSet = statement.executeQuery(sql);
 				if(resultSet.next()){
+					Player initialPlayer = new Player(resultSet.getString("League"),
+							resultSet.getString("Team"), resultSet.getString("Player"));
+					players.add(initialPlayer);
 					success = true;
+					while(resultSet.next()){
+						Player player = new Player(resultSet.getString("League"),
+								resultSet.getString("Team"), resultSet.getString("Player"));
+						players.add(player);
+					}
+					playerList.setList(players);
 				} else{
 					success = false;
 				}
@@ -243,10 +256,13 @@ public class UserController{
 			}
 
 			ResponseEntity responseEntity;
-			if(success)
-				responseEntity = new ResponseEntity<>("true", HttpStatus.OK);
-			else
+			if(success){
+				Gson gson = new Gson();
+				responseEntity = new ResponseEntity<>(gson.toJson(playerList), HttpStatus.OK);
+			}
+			else{
 				responseEntity = new ResponseEntity<>("false", HttpStatus.OK);
+			}
 
 			return responseEntity;
 		}
