@@ -210,7 +210,7 @@ public class UserController{
 		
 		
 		@RequestMapping(value="/retrievePlayers") //Encode into UTF-8
-		public ResponseEntity<String> login(){
+		public ResponseEntity<String> retrievePlayers(){
 			boolean success = false;
 			PlayerList playerList = new PlayerList();
 			ArrayList<Player> players = new ArrayList<Player>();
@@ -267,7 +267,17 @@ public class UserController{
 			return responseEntity;
 		}
 		
+		@RequestMapping(value="/retrieveFavorites")
+		public ResponseEntity<String> retrieveFavorites(){
+
+			return null;
+		}
 		
+		@RequestMapping(value="/sendFavorites")
+		public ResponseEntity<String> addUserFavorites(){
+
+			return null;
+		}
 		
 		
 		public void updateResetToken(String email, String token, String timeExpiration){
