@@ -79,6 +79,12 @@ public class UserController{
 			return responseEntity;
 	}
 		
+		@RequestMapping(value="/checkAvailable")
+		public ResponseEntity<String> checkAvailable(@RequestParam(value="username", required = false) String username){
+			return null;
+			
+		}
+		
 		
 		@RequestMapping(value="/login")
 		public ResponseEntity<String> login(@RequestParam(value="userName", required=true) String userName,
@@ -269,8 +275,15 @@ public class UserController{
 		
 		@RequestMapping(value="/retrieveFavorites")
 		public ResponseEntity<String> retrieveFavorites(){
-
-			return null;
+			ArrayList<String> favorites = new ArrayList<String>();
+			favorites.add("Virgil van Dijk");
+			favorites.add("José Fonte");
+			favorites.add("Florin Gardos");
+			favorites.add("Maya Yoshida");
+			Gson gson = new Gson();
+			ResponseEntity responseEntity;
+			responseEntity = new ResponseEntity<>(gson.toJson(favorites), HttpStatus.OK); 
+			return responseEntity;
 		}
 		
 		@RequestMapping(value="/sendFavorites")
