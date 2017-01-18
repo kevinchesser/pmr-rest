@@ -275,14 +275,20 @@ public class UserController{
 		
 		@RequestMapping(value="/retrieveFavorites")
 		public ResponseEntity<String> retrieveFavorites(){
-			ArrayList<String> favorites = new ArrayList<String>();
-			favorites.add("Virgil van Dijk");
-			favorites.add("José Fonte");
-			favorites.add("Florin Gardos");
-			favorites.add("Maya Yoshida");
+			PlayerList playerList = new PlayerList();
+			ArrayList<Player> favorites = new ArrayList<Player>();
+			Player player = new Player("", "", "Virgil van Dijk");
+			Player player1 = new Player("", "", "José Fonte");
+			Player player2 = new Player("", "", "Florin Gardos");
+			Player player3 = new Player("", "", "Maya Yoshida");
+			favorites.add(player);
+			favorites.add(player1);
+			favorites.add(player2);
+			favorites.add(player3);
+			playerList.setList(favorites);
 			Gson gson = new Gson();
 			ResponseEntity responseEntity;
-			responseEntity = new ResponseEntity<>(gson.toJson(favorites), HttpStatus.OK); 
+			responseEntity = new ResponseEntity<>(gson.toJson(playerList), HttpStatus.OK); 
 			return responseEntity;
 		}
 		
