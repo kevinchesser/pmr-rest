@@ -78,14 +78,15 @@ public class UserController{
 
 			return responseEntity;
 	}
-		
-		@RequestMapping(value="/checkAvailable")
+
+		//get the salt for the user and pass it back
+		@RequestMapping(value="/checkUser")
 		public ResponseEntity<String> checkAvailable(@RequestParam(value="username", required = false) String username){
 			return null;
 			
 		}
 		
-		
+		//needs to just take user and hash
 		@RequestMapping(value="/login")
 		public ResponseEntity<String> login(@RequestParam(value="userName", required=true) String userName,
 				@RequestParam(value="passHash", required=true) String passHash,
@@ -274,7 +275,7 @@ public class UserController{
 		}
 		
 		@RequestMapping(value="/retrieveFavorites")
-		public ResponseEntity<String> retrieveFavorites(){
+		public ResponseEntity<String> retrieveFavorites(@RequestParam(value="username", required=true) String username){
 			PlayerList playerList = new PlayerList();
 			ArrayList<Player> favorites = new ArrayList<Player>();
 			Player player = new Player("", "", "Virgil van Dijk");
