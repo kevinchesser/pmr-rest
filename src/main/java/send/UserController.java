@@ -79,18 +79,55 @@ public class UserController{
 			return responseEntity;
 	}
 
-		//get the salt for the user and pass it back
 		@RequestMapping(value="/checkUser")
-		public ResponseEntity<String> checkAvailable(@RequestParam(value="username", required = false) String username){
-			return null;
-			
+		public ResponseEntity<String> checkUser(@RequestParam(value="userName", required = true) String userName){
+			boolean success = false;
+			String salt = "";
+		
+			Connection connection = null;
+			ResultSet resultSet = null;
+			Statement statement = null;
+			try{
+//				String url = "jdbc:sqlite:/var/db/pmr.db";
+				String url = "jdbc:sqlite:../server/db/pmr.db";
+				connection = DriverManager.getConnection(url);
+				String sql = "Select * from User WHERE Username='" + userName + "';";
+				System.out.println(sql);
+				statement = connection.createStatement();
+				resultSet = statement.executeQuery(sql);
+				if(resultSet.next()){
+					salt = resultSet.getString("PasswordSalt");
+					success = true;
+				} else{
+					success = false;
+				}
+				System.out.println("Connection successful");
+			} catch (SQLException e){
+				System.out.println(e.getMessage());
+			} finally {
+				try{
+					if (connection != null){
+						resultSet.close();
+						statement.close();
+						connection.close();
+					}
+				} catch (SQLException ex) {
+					System.out.println(ex.getMessage());
+				}
+			}
+
+			ResponseEntity responseEntity;
+			if(success)
+				responseEntity = new ResponseEntity<>(salt, HttpStatus.OK);
+			else
+				responseEntity = new ResponseEntity<>("false", HttpStatus.OK);
+
+			return responseEntity;
 		}
 		
-		//needs to just take user and hash
 		@RequestMapping(value="/login")
 		public ResponseEntity<String> login(@RequestParam(value="userName", required=true) String userName,
-				@RequestParam(value="passHash", required=true) String passHash,
-				@RequestParam(value="passSalt", required=true) String passSalt){
+				@RequestParam(value="passHash", required=true) String passHash){
 			boolean success = false;
 		
 			Connection connection = null;
@@ -100,7 +137,7 @@ public class UserController{
 //				String url = "jdbc:sqlite:/var/db/pmr.db";
 				String url = "jdbc:sqlite:../server/db/pmr.db";
 				connection = DriverManager.getConnection(url);
-				String sql = "Select * from User WHERE Username='" + userName + "' AND PasswordHash='" + passHash + "' AND PasswordSalt='" + passSalt + "';";
+				String sql = "Select * from User WHERE Username='" + userName + "' AND PasswordHash='" + passHash + "';";
 				System.out.println(sql);
 				statement = connection.createStatement();
 				resultSet = statement.executeQuery(sql);
@@ -126,7 +163,7 @@ public class UserController{
 
 			ResponseEntity responseEntity;
 			if(success)
-				responseEntity = new ResponseEntity<>(userName, HttpStatus.OK);
+				responseEntity = new ResponseEntity<>("true", HttpStatus.OK);
 			else
 				responseEntity = new ResponseEntity<>("false", HttpStatus.OK);
 
