@@ -312,7 +312,7 @@ public class UserController{
 		}
 		
 		@RequestMapping(value="/retrieveFavorites")
-		public ResponseEntity<String> retrieveFavorites(@RequestParam(value="username", required=true) String username){
+		public ResponseEntity<String> retrieveFavorites(@RequestParam(value="userName", required=true) String userName){
 			PlayerList playerList = new PlayerList();
 			ArrayList<Player> favorites = new ArrayList<Player>();
 			Player player = new Player("", "", "Virgil van Dijk");
