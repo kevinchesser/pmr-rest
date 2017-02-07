@@ -181,7 +181,7 @@ public class UserController{
 				//String url = "jdbc:sqlite:/var/db/pmr.db";
 				String url = "jdbc:sqlite:../server/db/pmr.db";
 				connection = DriverManager.getConnection(url);
-				String sql = "Select * from User WHERE Email=" + email + ";";
+				String sql = "Select * from User WHERE Email='" + email + "';";
 				System.out.println(sql);
 				statement = connection.createStatement();
 				resultSet = statement.executeQuery(sql);
@@ -222,7 +222,7 @@ public class UserController{
 				Email from = new Email("");
 				String subject = "PMR Password reset request";
 				//Email to = new Email(email);
-				Email to = new Email("com");
+				Email to = new Email(email);
 				Content content = new Content("text/plain", "Hello, please click this link to take you to a password reset page"
 						+ "\npmr.com/resetpassword?token=" + resetToken);
 				Mail mail = new Mail(from, subject, to, content);
@@ -340,19 +340,22 @@ public class UserController{
 		public void updateResetToken(String email, String token, String timeExpiration){
 			Connection connection = null;
 			Statement statement = null;
+			ResultSet resultSet = null;
 			System.out.println(email + " " + token + " " + timeExpiration);
 			
 			try{
 				//String url = "jdbc:sqlite:/var/db/pmr.db";
 				String url = "jdbc:sqlite:../server/db/pmr.db";
 				connection = DriverManager.getConnection(url);
-				String sql = "UPDATE User SET ResetToken = ? , ResetExpiration = ? WHERE Email = ?";
+				String sql = "UPDATE User SET ResetToken = '" + token + "', ResetExpiration = '" + timeExpiration + "' WHERE Email = '" + email + "';";
 				System.out.println(sql);
-				PreparedStatement preparedStatement = connection.prepareStatement(sql);
+				statement = connection.createStatement();
+				statement.executeQuery(sql);
+				/*PreparedStatement preparedStatement = connection.prepareStatement(sql);
 				preparedStatement.setString(1, token);
 				preparedStatement.setString(2, timeExpiration);
 				preparedStatement.setString(3, email);
-				preparedStatement.executeUpdate(); //Need to do something when we try to insert a username/email that already exists
+				preparedStatement.executeUpdate(); */
 				System.out.println("Connection successful");
 			} catch (SQLException e){
 				System.out.println(e.getMessage());
