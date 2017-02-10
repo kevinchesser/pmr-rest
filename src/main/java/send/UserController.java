@@ -304,7 +304,7 @@ public class UserController{
 						//String url = "jdbc:sqlite:/var/db/pmr.db";
 						String url = "jdbc:sqlite:../server/db/pmr.db";
 						connection = DriverManager.getConnection(url);
-						String sql = "UPDATE User SET PasswordHash = '" + passwordHash + "', PasswordSalt = '" + passwordSalt + "' WHERE Email = '" + email + "';";
+						String sql = "UPDATE User SET PasswordHash = '" + passwordHash + "', PasswordSalt = '" + passwordSalt + "', ResetExpiration = '0' WHERE Email = '" + email + "';";
 						System.out.println(sql);
 						statement = connection.createStatement();
 						statement.executeQuery(sql);
