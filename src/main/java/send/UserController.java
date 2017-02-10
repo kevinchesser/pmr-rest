@@ -224,7 +224,7 @@ public class UserController{
 				//Email to = new Email(email);
 				Email to = new Email(email);
 				Content content = new Content("text/plain", "Hello, please click this link to take you to a password reset page"
-						+ "\npmr.com/resetpassword?token=" + resetToken);
+						+ "\npmr.com/resetpassword?token=" + resetToken + "&email=" + email);
 				Mail mail = new Mail(from, subject, to, content);
 				SendGrid sg = new SendGrid("");
 				Request request = new Request();
