@@ -211,7 +211,6 @@ public class UserController{
 				String resetToken = resetIdentifierGenerator.nextSessionId();
 				long time = System.nanoTime() + 180000000000L;  //add thirty minutes in nanoseconds
 				String timeString = Long.toString(time);
-				System.out.println(resetToken + " " + timeString);
 				updateResetToken(email, resetToken, timeString);
 
 				/*Hash hash = new Hash();
@@ -248,6 +247,94 @@ public class UserController{
 				responseEntity = new ResponseEntity<>("false", HttpStatus.OK);
 				System.out.println("Email not in db - not doing anything");
 			}	
+			
+			return responseEntity;
+		}
+		
+		@RequestMapping(value="/resetpassword")
+		public ResponseEntity<String> resetPassword(@RequestParam(value = "token", required=true)String token,
+				@RequestParam(value = "email", required=true) String email,
+				@RequestParam(value = "passwordHash", required=true) String passwordHash,
+				@RequestParam(value = "passwordSalt", required=true) String passwordSalt){
+			
+			long currentTime = System.nanoTime(); //get current time in nanoseconds
+			//String timeString = Long.toString(time);
+			String resetString = "";
+			boolean initialSuccess = false;
+			boolean secondarySuccess = false;
+			Connection connection = null;
+			ResultSet resultSet = null;
+			Statement statement = null;
+			
+			try{
+				//String url = "jdbc:sqlite:/var/db/pmr.db";
+				String url = "jdbc:sqlite:../server/db/pmr.db";
+				connection = DriverManager.getConnection(url);
+				String sql = "Select ResetExpiration from User WHERE Email='" + email + "';";
+				System.out.println(sql);
+				statement = connection.createStatement();
+				resultSet = statement.executeQuery(sql);
+				if(resultSet.next()){
+					initialSuccess = true;
+					resetString = resultSet.getString("ResetExpiration");
+				} else{
+					initialSuccess = false;
+				}
+				System.out.println("Connection successful");
+			} catch (SQLException e){
+				System.out.println(e.getMessage());
+			} finally {
+				try{
+					if (connection != null){
+						resultSet.close();
+						statement.close();
+						connection.close();
+					}
+				} catch (SQLException ex) {
+					System.out.println(ex.getMessage());
+				}
+			}
+			ResponseEntity responseEntity;
+
+			if(initialSuccess){
+				long resetTime = Long.parseLong(resetString);
+				if(currentTime - resetTime < 0){
+					System.out.println("token still valid");
+					try{
+						//String url = "jdbc:sqlite:/var/db/pmr.db";
+						String url = "jdbc:sqlite:../server/db/pmr.db";
+						connection = DriverManager.getConnection(url);
+						String sql = "UPDATE User SET PasswordHash = '" + passwordHash + "', PasswordSalt = '" + passwordSalt + "' WHERE Email = '" + email + "';";
+						System.out.println(sql);
+						statement = connection.createStatement();
+						statement.executeQuery(sql);
+						/*PreparedStatement preparedStatement = connection.prepareStatement(sql);
+						preparedStatement.setString(1, token);
+						preparedStatement.setString(2, timeExpiration);
+						preparedStatement.setString(3, email);
+						preparedStatement.executeUpdate(); */
+						System.out.println("Connection successful");
+					} catch (SQLException e){
+						System.out.println(e.getMessage());
+					} finally {
+						try{
+							if (connection != null){
+								resultSet.close();
+								statement.close();
+								connection.close();
+							}
+						} catch (SQLException ex) {
+							System.out.println(ex.getMessage());
+						}
+					} 
+					responseEntity = new ResponseEntity<>("true", HttpStatus.OK);
+				} else{
+					System.out.println("token expired");
+					responseEntity = new ResponseEntity<>("false", HttpStatus.OK);
+				}
+			} else{
+				responseEntity = new ResponseEntity<>("false", HttpStatus.OK);
+			}
 			
 			return responseEntity;
 		}
@@ -359,7 +446,7 @@ public class UserController{
 				System.out.println("Connection successful");
 			} catch (SQLException e){
 				System.out.println(e.getMessage());
-			} /*finally {
+			} finally {
 				try{
 					if (connection != null){
 						connection.close();
@@ -367,7 +454,7 @@ public class UserController{
 				} catch (SQLException ex) {
 					System.out.println(ex.getMessage());
 				}
-			}*/
+			}
 			
 		}
 }
