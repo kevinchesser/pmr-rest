@@ -400,17 +400,55 @@ public class UserController{
 		
 		@RequestMapping(value="/retrieveFavorites")
 		public ResponseEntity<String> retrieveFavorites(@RequestParam(value="userName", required=true) String userName){
+			
+			////////////////////////////////////////////////
+			
+			boolean success = false;
 			PlayerList playerList = new PlayerList();
-			ArrayList<Player> favorites = new ArrayList<Player>();
-			Player player = new Player("", "", "Virgil van Dijk");
-			Player player1 = new Player("", "", "José Fonte");
-			Player player2 = new Player("", "", "Florin Gardos");
-			Player player3 = new Player("", "", "Maya Yoshida");
-			favorites.add(player);
-			favorites.add(player1);
-			favorites.add(player2);
-			favorites.add(player3);
-			playerList.setList(favorites);
+			ArrayList<Player> players = new ArrayList<Player>();
+			Connection connection = null;
+			ResultSet resultSet = null;
+			Statement statement = null;
+			
+			
+			try{
+				String url = "jdbc:sqlite:../server/db/pmr.db";
+				connection = DriverManager.getConnection(url);
+				String sql = "Select * from User WHERE Username='" + userName + "';";
+				statement = connection.createStatement();
+				resultSet = statement.executeQuery(sql);
+				if(resultSet.next()){ //for each record in the result set need to iterate over all entries delimited by &
+					Player initialPlayer = new Player("", "", resultSet.getString("Player"));
+					players.add(initialPlayer);
+					success = true;
+					while(resultSet.next()){
+						Player player = new Player("", "", resultSet.getString("Player"));
+						players.add(player);
+					}
+					playerList.setList(players);
+				} else{
+					success = false;
+				}
+				System.out.println("Connection successful");
+			} catch (SQLException e){
+				System.out.println(e.getMessage());
+			} finally {
+				try{
+					if (connection != null){
+						resultSet.close();
+						statement.close();
+						connection.close();
+					}
+				} catch (SQLException ex) {
+					System.out.println(ex.getMessage());
+				}
+			}
+			
+			////////////////////////////////////////////
+			
+			
+			PlayerList playerList = new PlayerList();
+			playerList.setList(players);
 			Gson gson = new Gson();
 			ResponseEntity responseEntity;
 			responseEntity = new ResponseEntity<>(gson.toJson(playerList), HttpStatus.OK); 
@@ -419,7 +457,7 @@ public class UserController{
 		
 		@RequestMapping(value="/sendFavorites")
 		public ResponseEntity<String> addUserFavorites(){
-
+			
 			return null;
 		}
 		
