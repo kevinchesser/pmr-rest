@@ -1,6 +1,7 @@
 package send;
 
 import org.springframework.http.HttpStatus;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -23,6 +24,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.regex.Pattern;
 
 @RestController
 public class UserController{
@@ -418,13 +420,14 @@ public class UserController{
 				statement = connection.createStatement();
 				resultSet = statement.executeQuery(sql);
 				if(resultSet.next()){ //for each record in the result set need to iterate over all entries delimited by &
-					Player initialPlayer = new Player("", "", resultSet.getString("Player"));
-					players.add(initialPlayer);
-					success = true;
-					while(resultSet.next()){
-						Player player = new Player("", "", resultSet.getString("Player"));
-						players.add(player);
+					System.out.println("Result set is " + resultSet.getString("Keywords"));
+					String[] tokens = resultSet.getString("Keywords").split(Pattern.quote("&"));;
+					for (String player : tokens) {
+						Player aPlayer = new Player("", "", player);
+						players.add(aPlayer);
 					}
+					success = true;
+					
 					playerList.setList(players);
 				} else{
 					success = false;
@@ -447,7 +450,6 @@ public class UserController{
 			////////////////////////////////////////////
 			
 			
-			PlayerList playerList = new PlayerList();
 			playerList.setList(players);
 			Gson gson = new Gson();
 			ResponseEntity responseEntity;
