@@ -3,6 +3,7 @@ package send;
 import org.springframework.http.HttpStatus;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -458,9 +459,49 @@ public class UserController{
 		}
 		
 		@RequestMapping(value="/sendFavorites")
-		public ResponseEntity<String> addUserFavorites(){
+		public ResponseEntity<String> addUserFavorites(@RequestParam(value = "favorites", required = true) String keywords, 
+				@RequestParam(value = "username", required = true) String username){
+			boolean success = false;
+			PlayerList playerList = new PlayerList();
+			ArrayList<Player> players = new ArrayList<Player>();
+			Connection connection = null;
+			ResultSet resultSet = null;
+			Statement statement = null;
+			keywords = keywords.replace("|", "&");
 			
-			return null;
+			
+			try{
+//				String url = "jdbc:sqlite:/var/db/pmr.db";
+				String url = "jdbc:sqlite:../server/db/pmr.db";
+				connection = DriverManager.getConnection(url);
+				String sql = "UPDATE User SET Keywords = '" + keywords + "' WHERE Username = '" + username + "';";
+				statement = connection.createStatement();
+				statement.executeUpdate(sql);
+				System.out.println("Connection successful");
+				success = true;
+			} catch (SQLException e){
+				System.out.println(e.getMessage());
+				success = false;
+			} finally {
+				try{
+					if (connection != null){
+						statement.close();
+						connection.close();
+					}
+				} catch (SQLException ex) {
+					System.out.println(ex.getMessage());
+				}
+			}
+
+			ResponseEntity responseEntity;
+			if(success){
+				responseEntity = new ResponseEntity<>("true", HttpStatus.OK);
+			}
+			else{
+				responseEntity = new ResponseEntity<>("false", HttpStatus.OK);
+			}
+
+			return responseEntity;
 		}
 		
 		
