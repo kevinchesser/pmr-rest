@@ -414,7 +414,8 @@ public class UserController{
 		}
 		
 		@RequestMapping(value="/retrieveFavorites")
-		public ResponseEntity<String> retrieveFavorites(@RequestParam(value="userName", required=true) String userName){
+		public ResponseEntity<String> retrieveFavorites(@RequestParam(value="userName", required=true) String userName,
+				@RequestParam(value="loginKey", required=true) String loginKey){
 			
 			////////////////////////////////////////////////
 			
@@ -463,16 +464,22 @@ public class UserController{
 			////////////////////////////////////////////
 			
 			
+			boolean validLoginKey = checkLoginKey(userName, loginKey);
 			playerList.setList(players);
 			Gson gson = new Gson();
 			ResponseEntity responseEntity;
-			responseEntity = new ResponseEntity<>(gson.toJson(playerList), HttpStatus.OK); 
+			if(success && validLoginKey){
+				responseEntity = new ResponseEntity<>(gson.toJson(playerList), HttpStatus.OK); 
+			}else{
+				responseEntity = new ResponseEntity<>("false", HttpStatus.OK); 
+			}
 			return responseEntity;
 		}
 		
 		@RequestMapping(value="/sendFavorites", method = RequestMethod.POST)
 		public ResponseEntity<String> addUserFavorites(@RequestParam(value = "favorites", required = true) String keywords, 
-				@RequestParam(value = "username", required = true) String username){
+				@RequestParam(value = "username", required = true) String username,
+				@RequestParam(value = "loginKey", required = true) String loginKey){
 			boolean success = false;
 			PlayerList playerList = new PlayerList();
 			ArrayList<Player> players = new ArrayList<Player>();
@@ -505,8 +512,11 @@ public class UserController{
 				}
 			}
 
+
+			boolean validLoginKey = checkLoginKey(username, loginKey);
+			
 			ResponseEntity responseEntity;
-			if(success){
+			if(success && validLoginKey){
 				responseEntity = new ResponseEntity<>("true", HttpStatus.OK);
 			}
 			else{
