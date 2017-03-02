@@ -3,7 +3,6 @@ package send;
 import org.springframework.http.HttpStatus;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -36,19 +35,22 @@ public class UserController{
 				@RequestParam(value="email", required=true) String email,
 				@RequestParam(value="passHash", required=true) String passHash,
 				@RequestParam(value="passSalt", required=true) String passSalt,
-				@RequestParam(value="phoneNumber", required=true) String phoneNumber) {
+				@RequestParam(value="phoneNumber", required=true) String phoneNumber,
+				@RequestParam(value="loginKey", required=true) String loginKey) {
 			
 			boolean success = false;
 			Connection connection = null;
 			ResultSet resultSet = null;
 			Statement statement = null;
-			
+			long resetTime = System.nanoTime() + 157700000000000000L;  //add one year in nanoseconds
+			long loginResetTime = System.nanoTime() + 3600000000000L;  //add one hour in nanoseconds
 			try{
 				//String url = "jdbc:sqlite:/var/db/pmr.db";
 				String url = "jdbc:sqlite:../server/db/pmr.db";
 				connection = DriverManager.getConnection(url);
 				String sql = "INSERT INTO User(Username, Email, PasswordHash, PasswordSalt, PhoneNumber, Keywords, "
-						+ "ResetToken, ResetExpiration) VALUES(?,?,?,?,?,?,?,?)";
+						+ "ResetToken, ResetExpiration, ReceiveTexts, ReceiveEmails, LoginKey, LoginKeyExpiration)"
+						+ " VALUES(?,?,?,?,?,?,?,?,?,?,?,?)";
 				PreparedStatement preparedStatement = connection.prepareStatement(sql);
 				preparedStatement.setString(1, userName);
 				preparedStatement.setString(2, email);
@@ -58,6 +60,10 @@ public class UserController{
 				preparedStatement.setString(6, "");
 				preparedStatement.setString(7, "");
 				preparedStatement.setString(8, "");
+				preparedStatement.setFloat(9, resetTime);
+				preparedStatement.setFloat(10, resetTime);
+				preparedStatement.setString(11, loginKey);
+				preparedStatement.setFloat(12, loginResetTime);
 				preparedStatement.executeUpdate(); //Need to do something when we try to insert a username/email that already exists
 				success = true;
 				System.out.println("Connection successful");
@@ -131,7 +137,8 @@ public class UserController{
 		
 		@RequestMapping(value="/login")
 		public ResponseEntity<String> login(@RequestParam(value="userName", required=true) String userName,
-				@RequestParam(value="passHash", required=true) String passHash){
+				@RequestParam(value="passHash", required=true) String passHash,
+				@RequestParam(value="loginKey", required=true) String loginKey){
 			boolean success = false;
 		
 			Connection connection = null;
@@ -164,6 +171,7 @@ public class UserController{
 					System.out.println(ex.getMessage());
 				}
 			}
+			updateLoginKey(userName, loginKey);
 
 			ResponseEntity responseEntity;
 			if(success)
@@ -345,7 +353,8 @@ public class UserController{
 		
 		
 		@RequestMapping(value="/retrievePlayers") //Encode into UTF-8
-		public ResponseEntity<String> retrievePlayers(){
+		public ResponseEntity<String> retrievePlayers(@RequestParam (value="userName", required = true) String userName, 
+				@RequestParam(value="loginKey", required=true) String loginKey){
 			boolean success = false;
 			PlayerList playerList = new PlayerList();
 			ArrayList<Player> players = new ArrayList<Player>();
@@ -390,8 +399,10 @@ public class UserController{
 				}
 			}
 
+			boolean validLoginKey = checkLoginKey(userName, loginKey);
+
 			ResponseEntity responseEntity;
-			if(success){
+			if(success && validLoginKey){
 				Gson gson = new Gson();
 				responseEntity = new ResponseEntity<>(gson.toJson(playerList), HttpStatus.OK);
 			}
@@ -505,6 +516,76 @@ public class UserController{
 			return responseEntity;
 		}
 		
+		public boolean checkLoginKey(String userName, String loginKey){
+			boolean success = false;
+			Connection connection = null;
+			ResultSet resultSet = null;
+			Statement statement = null;
+			try{
+//				String url = "jdbc:sqlite:/var/db/pmr.db";
+				String url = "jdbc:sqlite:../server/db/pmr.db";
+				connection = DriverManager.getConnection(url);
+				String sql = "Select * from User WHERE Username='" + userName + "' AND LoginKey='" + loginKey + "';";
+				System.out.println(sql);
+				statement = connection.createStatement();
+				resultSet = statement.executeQuery(sql);
+				if(resultSet.next()){
+					success = true;
+				} else{
+					success = false;
+				}
+				System.out.println("Connection successful");
+			} catch (SQLException e){
+				System.out.println(e.getMessage());
+			} finally {
+				try{
+					if (connection != null){
+						resultSet.close();
+						statement.close();
+						connection.close();
+					}
+				} catch (SQLException ex) {
+					System.out.println(ex.getMessage());
+				}
+			}	
+			
+			return success;
+		}
+		
+		public void updateLoginKey(String username, String loginKey){
+			Connection connection = null;
+			Statement statement = null;
+			ResultSet resultSet = null;
+			long loginResetTime = System.nanoTime() + 3600000000000L;  //add one hour in nanoseconds
+
+			try{
+				//String url = "jdbc:sqlite:/var/db/pmr.db";
+				String url = "jdbc:sqlite:../server/db/pmr.db";
+				connection = DriverManager.getConnection(url);
+				String sql = "UPDATE User SET LoginKey = '" + loginKey + "', LoginKeyExpiration = '" + loginResetTime + "' WHERE Username = '" + username + "';";
+				System.out.println(sql);
+				statement = connection.createStatement();
+				statement.executeQuery(sql);
+				/*PreparedStatement preparedStatement = connection.prepareStatement(sql);
+				preparedStatement.setString(1, token);
+				preparedStatement.setString(2, timeExpiration);
+				preparedStatement.setString(3, email);
+				preparedStatement.executeUpdate(); */
+				System.out.println("Connection successful");
+			} catch (SQLException e){
+				System.out.println(e.getMessage());
+			} finally {
+				try{
+					if (connection != null){
+						connection.close();
+					}
+				} catch (SQLException ex) {
+					System.out.println(ex.getMessage());
+				}
+			}
+		
+			
+		}
 		
 		public void updateResetToken(String email, String token, String timeExpiration){
 			Connection connection = null;
