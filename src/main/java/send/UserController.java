@@ -225,8 +225,6 @@ public class UserController{
 			Gson gson = new Gson();
 			long currentTime = System.nanoTime();
 			float currentTimeFloat = currentTime;
-			System.out.println(currentTimeFloat);
-			System.out.println(receiveEmails);
 			if(currentTimeFloat > receiveEmails){
 				notificationSettings.setReceiveEmails(1);
 			}else{
@@ -591,7 +589,7 @@ public class UserController{
 		}
 		
 		@RequestMapping(value="/logout", method = RequestMethod.POST)
-		public ResponseEntity<String> logout(@RequestParam(value = "username", required = true) String username, 
+		public ResponseEntity<String> logout(@RequestParam(value = "userName", required = true) String username, 
 				@RequestParam(value = "loginKey", required = true) String loginKey){
 			boolean success = false;
 			Connection connection = null;
