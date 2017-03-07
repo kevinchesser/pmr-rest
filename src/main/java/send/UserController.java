@@ -182,6 +182,70 @@ public class UserController{
 			return responseEntity;
 		}
 		
+		@RequestMapping(value="/sendSettings")
+		public ResponseEntity<String> sendSettings(@RequestParam(value="userName", required=true) String userName,
+				@RequestParam(value="loginKey", required=true) String loginKey){
+			boolean success = false;
+		
+			Connection connection = null;
+			ResultSet resultSet = null;
+			Statement statement = null;
+			float receiveEmails = 0;
+			float receiveTexts = 0;
+			NotificationSettings notificationSettings = new NotificationSettings();
+			try{
+//				String url = "jdbc:sqlite:/var/db/pmr.db";
+				String url = "jdbc:sqlite:../server/db/pmr.db";
+				connection = DriverManager.getConnection(url);
+				String sql = "Select ReceiveEmails, ReceiveTexts from User WHERE Username='" + userName + "' AND LoginKey='" + loginKey + "';";
+				System.out.println(sql);
+				statement = connection.createStatement();
+				resultSet = statement.executeQuery(sql);
+				if(resultSet.next()){
+					success = true;
+					receiveEmails = resultSet.getFloat("ReceiveEmails");
+					receiveTexts = resultSet.getFloat("ReceiveTexts");
+				} else{
+					success = false;
+				}
+				System.out.println("Connection successful");
+			} catch (SQLException e){
+				System.out.println(e.getMessage());
+			} finally {
+				try{
+					if (connection != null){
+						resultSet.close();
+						statement.close();
+						connection.close();
+					}
+				} catch (SQLException ex) {
+					System.out.println(ex.getMessage());
+				}
+			}
+			Gson gson = new Gson();
+			long currentTime = System.nanoTime();
+			float currentTimeFloat = currentTime;
+			System.out.println(currentTimeFloat);
+			System.out.println(receiveEmails);
+			if(currentTimeFloat > receiveEmails){
+				notificationSettings.setReceiveEmails(1);
+			}else{
+				notificationSettings.setReceiveEmails(0);
+			}
+			if(currentTimeFloat > receiveTexts){
+				notificationSettings.setReceiveTexts(1);
+			}else{
+				notificationSettings.setReceiveTexts(0);
+			}
+			ResponseEntity responseEntity;
+			if(success)
+				responseEntity = new ResponseEntity<>(gson.toJson(notificationSettings), HttpStatus.OK);
+			else
+				responseEntity = new ResponseEntity<>("false", HttpStatus.OK);
+
+			return responseEntity;
+		}
+		
 		@RequestMapping(value="/reset")
 		public ResponseEntity<String> recover(@RequestParam(value="email", required=true) String email) throws IOException {
 			boolean success = false;
@@ -525,6 +589,49 @@ public class UserController{
 
 			return responseEntity;
 		}
+		
+		@RequestMapping(value="/logout", method = RequestMethod.POST)
+		public ResponseEntity<String> logout(@RequestParam(value = "username", required = true) String username, 
+				@RequestParam(value = "loginKey", required = true) String loginKey){
+			boolean success = false;
+			Connection connection = null;
+			ResultSet resultSet = null;
+			Statement statement = null;
+			
+			try{
+//				String url = "jdbc:sqlite:/var/db/pmr.db";
+				String url = "jdbc:sqlite:../server/db/pmr.db";
+				connection = DriverManager.getConnection(url);
+				String sql = "UPDATE User SET LoginKey = '\"\"' WHERE Username = '" + username + "' AND LoginKey = '" + loginKey +"';";
+				statement = connection.createStatement();
+				statement.executeUpdate(sql);
+				System.out.println("Connection successful");
+				success = true;
+			} catch (SQLException e){
+				System.out.println(e.getMessage());
+				success = false;
+			} finally {
+				try{
+					if (connection != null){
+						statement.close();
+						connection.close();
+					}
+				} catch (SQLException ex) {
+					System.out.println(ex.getMessage());
+				}
+			}
+
+			ResponseEntity responseEntity;
+			if(success){
+				responseEntity = new ResponseEntity<>("true", HttpStatus.OK);
+			}
+			else{
+				responseEntity = new ResponseEntity<>("false", HttpStatus.OK);
+			}
+
+			return responseEntity;
+		}
+		
 		
 		public boolean checkLoginKey(String userName, String loginKey){
 			boolean success = false;
