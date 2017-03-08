@@ -244,6 +244,66 @@ public class UserController{
 			return responseEntity;
 		}
 		
+		
+		@RequestMapping(value="/updateSettings", method = RequestMethod.POST)
+		public ResponseEntity<String> updateSettings(@RequestParam(value = "receiveEmails", required = true) float receiveEmails, 
+				@RequestParam(value = "receiveTexts", required = true) float receiveTexts,
+				@RequestParam(value = "suspendNotifs", required = true) float suspendNotifs,
+				@RequestParam(value = "userName", required = true) String userName,
+				@RequestParam(value = "loginKey", required = true) String loginKey){
+			boolean success = false;
+			Connection connection = null;
+			ResultSet resultSet = null;
+			Statement statement = null;
+
+			if(receiveEmails == 1.0){
+				receiveEmails = System.nanoTime() + (suspendNotifs * 3600000000000L);
+			} else{
+				receiveEmails = System.nanoTime() + 157700000000000000L;
+			}
+			if(receiveTexts == 1.0){
+				receiveTexts = System.nanoTime() + (suspendNotifs * 3600000000000L);
+			} else{
+				receiveTexts = System.nanoTime() + 157700000000000000L;
+			}
+
+			try{
+//				String url = "jdbc:sqlite:/var/db/pmr.db";
+				String url = "jdbc:sqlite:../server/db/pmr.db";
+				connection = DriverManager.getConnection(url);
+				String sql = "UPDATE User SET ReceiveTexts = " + receiveTexts + ", ReceiveEmails = " + receiveEmails + " WHERE Username = '" + userName + "';";
+				statement = connection.createStatement();
+				statement.executeUpdate(sql);
+				System.out.println("Connection successful");
+				success = true;
+			} catch (SQLException e){
+				System.out.println(e.getMessage());
+				success = false;
+			} finally {
+				try{
+					if (connection != null){
+						statement.close();
+						connection.close();
+					}
+				} catch (SQLException ex) {
+					System.out.println(ex.getMessage());
+				}
+			}
+
+
+			boolean validLoginKey = checkLoginKey(userName, loginKey);
+			
+			ResponseEntity responseEntity;
+			if(success && validLoginKey){
+				responseEntity = new ResponseEntity<>("true", HttpStatus.OK);
+			}
+			else{
+				responseEntity = new ResponseEntity<>("false", HttpStatus.OK);
+			}
+
+			return responseEntity;
+		}	
+		
 		@RequestMapping(value="/reset")
 		public ResponseEntity<String> recover(@RequestParam(value="email", required=true) String email) throws IOException {
 			boolean success = false;
