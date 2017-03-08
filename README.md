@@ -8,6 +8,7 @@
         \/_/                                  
 
 [![Build Status](https://travis-ci.org/kevinchesser/pmr-rest.svg?branch=master)](https://travis-ci.org/kevinchesser/pmr-rest)
+
 just the rest controller though 
 
 Using Kalium for java bindings to libsodium
