@@ -17,7 +17,7 @@ public class NotificationSettings {
 	}
 
 	public void setReceiveEmails(int receiveEmails) {
-		receiveEmails = receiveEmails;
+		this.receiveEmails = receiveEmails;
 	}
 
 	public int getReceiveTexts() {
@@ -25,7 +25,7 @@ public class NotificationSettings {
 	}
 
 	public void setReceiveTexts(int receiveTexts) {
-		receiveTexts = receiveTexts;
+		this.receiveTexts = receiveTexts;
 	}
 	
 

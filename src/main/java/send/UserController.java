@@ -223,14 +223,14 @@ public class UserController{
 				}
 			}
 			Gson gson = new Gson();
-			long currentTime = System.nanoTime();
-			float currentTimeFloat = currentTime;
-			if(currentTimeFloat > receiveEmails){
+			float currentTime = System.nanoTime();
+			if(currentTime > receiveEmails){
 				notificationSettings.setReceiveEmails(1);
 			}else{
 				notificationSettings.setReceiveEmails(0);
 			}
-			if(currentTimeFloat > receiveTexts){
+
+			if(currentTime > receiveTexts){
 				notificationSettings.setReceiveTexts(1);
 			}else{
 				notificationSettings.setReceiveTexts(0);
