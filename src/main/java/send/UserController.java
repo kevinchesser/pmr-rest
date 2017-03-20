@@ -45,11 +45,8 @@ public class UserController{
 			Connection connection = null;
 			ResultSet resultSet = null;
 			Statement statement = null;
-			Hash hash = new Hash();
-			Salt salt = new Salt();
-			String saltString = salt.generateSalt();
-			String saltHash = passHash + saltString;
-			String backEndHash = hash.sha256(saltHash, HEX);
+			String[] values = new String[2]; //0 - salt, 1 - hash
+			values = getPasswordHash(passHash);
 			
 			long resetTime = System.nanoTime() + 157700000000000000L;  //add one year in nanoseconds
 			long loginResetTime = System.nanoTime() + 3600000000000L;  //add one hour in nanoseconds
@@ -77,7 +74,7 @@ public class UserController{
 				preparedStatement.setString(11, loginKey);
 				preparedStatement.setFloat(12, loginResetTime);
 				//preparedStatement.setString(13,  saltString);
-				preparedStatement.executeUpdate(); //Need to do something when we try to insert a username/email that already exists
+				preparedStatement.executeUpdate(); 
 				success = true;
 				System.out.println("Connection successful");
 			} catch (SQLException e){
@@ -808,4 +805,19 @@ public class UserController{
 			}
 			
 		}
+		
+		public String[] getPasswordHash(String frontEndHash){
+			Hash hash = new Hash();
+			Salt salt = new Salt();
+			String[] values = new String[2];
+			String saltString = salt.generateSalt();
+			String saltHash = frontEndHash + saltString;
+			String backEndHash = hash.sha256(saltHash, HEX);
+			values[0] = saltString; //Position 0 - Salt for Server
+			values[1] = backEndHash; //Position 1 - Hash generated on backEND
+			System.out.println(values[0]);
+			System.out.println(values[1]);
+			return values;
+		}
+
 }
