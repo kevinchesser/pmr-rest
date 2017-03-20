@@ -49,11 +49,7 @@ public class UserController{
 			Salt salt = new Salt();
 			String saltString = salt.generateSalt();
 			String saltHash = passHash + saltString;
-			//System.out.println(saltHash);
-			String result = hash.sha256(saltHash, HEX);
-			System.out.println(result);
-			
-			
+			String backEndHash = hash.sha256(saltHash, HEX);
 			
 			long resetTime = System.nanoTime() + 157700000000000000L;  //add one year in nanoseconds
 			long loginResetTime = System.nanoTime() + 3600000000000L;  //add one hour in nanoseconds
