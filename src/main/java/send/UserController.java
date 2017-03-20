@@ -47,19 +47,21 @@ public class UserController{
 			Statement statement = null;
 			String[] values = new String[2]; //0 - salt, 1 - hash
 			values = getPasswordHash(passHash);
-			
+			passHash = values[1];
+			String saltString = values[0];
+
 			long resetTime = System.nanoTime() + 157700000000000000L;  //add one year in nanoseconds
 			long loginResetTime = System.nanoTime() + 3600000000000L;  //add one hour in nanoseconds
 			try{
 				//String url = "jdbc:sqlite:/var/db/pmr.db";
 				String url = "jdbc:sqlite:../server/db/pmr.db";
 				connection = DriverManager.getConnection(url);
-				//String sql = "INSERT INTO User(Username, Email, PasswordHash, PasswordSalt, PhoneNumber, Keywords, "
-				//		+ "ResetToken, ResetExpiration, ReceiveTexts, ReceiveEmails, LoginKey, LoginKeyExpiration, PasswordSaltServer)"
-				//		+ " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)";
 				String sql = "INSERT INTO User(Username, Email, PasswordHash, PasswordSalt, PhoneNumber, Keywords, "
-						+ "ResetToken, ResetExpiration, ReceiveTexts, ReceiveEmails, LoginKey, LoginKeyExpiration)"
-						+ " VALUES(?,?,?,?,?,?,?,?,?,?,?,?)";
+						+ "ResetToken, ResetExpiration, ReceiveTexts, ReceiveEmails, LoginKey, LoginKeyExpiration, ServerPasswordSalt)"
+						+ " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)";
+				//String sql = "INSERT INTO User(Username, Email, PasswordHash, PasswordSalt, PhoneNumber, Keywords, "
+				//		+ "ResetToken, ResetExpiration, ReceiveTexts, ReceiveEmails, LoginKey, LoginKeyExpiration)"
+				//		+ " VALUES(?,?,?,?,?,?,?,?,?,?,?,?)";
 				PreparedStatement preparedStatement = connection.prepareStatement(sql);
 				preparedStatement.setString(1, userName);
 				preparedStatement.setString(2, email);
@@ -73,7 +75,7 @@ public class UserController{
 				preparedStatement.setFloat(10, resetTime);
 				preparedStatement.setString(11, loginKey);
 				preparedStatement.setFloat(12, loginResetTime);
-				//preparedStatement.setString(13,  saltString);
+				preparedStatement.setString(13,  saltString);
 				preparedStatement.executeUpdate(); 
 				success = true;
 				System.out.println("Connection successful");
