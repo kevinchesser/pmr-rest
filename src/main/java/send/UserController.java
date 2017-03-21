@@ -146,7 +146,7 @@ public class UserController{
 
 			return responseEntity;
 		}
-		
+		//TODO:Refactor with backend salting and hashing
 		@RequestMapping(value="/login")
 		public ResponseEntity<String> login(@RequestParam(value="userName", required=true) String userName,
 				@RequestParam(value="passHash", required=true) String passHash,
@@ -396,7 +396,7 @@ public class UserController{
 			
 			return responseEntity;
 		}
-		
+		//TODO:Refactor with backend salting and hashing
 		@RequestMapping(value="/resetpassword")
 		public ResponseEntity<String> resetPassword(@RequestParam(value = "token", required=true)String token,
 				@RequestParam(value = "email", required=true) String email,
