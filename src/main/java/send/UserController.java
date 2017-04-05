@@ -621,7 +621,8 @@ public class UserController{
 			ResultSet resultSet = null;
 			Statement statement = null;
 			keywords = keywords.replace("|", "&");
-			
+			keywords = keywords.replace("'", "''");
+			System.out.println(keywords);
 			
 			try{
 //				String url = "jdbc:sqlite:/var/db/pmr.db";
