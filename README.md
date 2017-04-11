@@ -15,5 +15,9 @@ This repo contains the code for all of the interactions with the database for pm
 [libsodium](https://github.com/jedisct1/libsodium)
 
 Other PMR Repos:
-[Web](https://github.com/jaxmann/pmr-web) |
-[Server](https://github.com/jaxmann/pmr-server)
+
+[pmr-server](https://github.com/jaxmann/pmr-server)
+
+[pmr-rest](https://github.com/kevinchesser/pmr-rest)
+
+[pmr-web](https://github.com/jaxmann/pmr-web)
