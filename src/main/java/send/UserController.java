@@ -356,8 +356,8 @@ public class UserController{
 
 			ResponseEntity responseEntity;
 			if(success){
-				ResetIdentifierGenerator resetIdentifierGenerator = new ResetIdentifierGenerator();
-				String resetToken = resetIdentifierGenerator.nextSessionId();
+				IdentifierGenerator IdentifierGenerator = new IdentifierGenerator();
+				String resetToken = IdentifierGenerator.nextSessionId();
 				long time = System.nanoTime() + 180000000000L;  //add thirty minutes in nanoseconds
 				String timeString = Long.toString(time);
 				updateResetToken(email, resetToken, timeString);
