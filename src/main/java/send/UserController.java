@@ -775,6 +775,54 @@ public class UserController{
  
  			return responseEntity;
  		}
+		
+		
+		@RequestMapping(value="/confirmAccount", method = RequestMethod.POST)
+		public ResponseEntity<String> confirmAccount(@RequestParam(value = "token", required = true) String confirmationToken, 
+				@RequestParam(value = "userName", required = true) String username){
+			boolean success = false;
+			Connection connection = null;
+			ResultSet resultSet = null;
+			Statement statement = null;
+			int count;
+			
+			long resetTime = System.nanoTime() + 157700000000000000L;  //add five years in nanoseconds
+			
+			try{
+//				String url = "jdbc:sqlite:/var/db/pmr.db";
+				String url = "jdbc:sqlite:../server/db/pmr.db";
+				connection = DriverManager.getConnection(url);
+				String sql = "UPDATE User SET ReceiveTexts = '" + resetTime + "', ReceiveEmails = '" + resetTime + "' WHERE Username = '" + username + "' AND ConfirmToken='" + confirmationToken + "';";
+				statement = connection.createStatement();
+				count = statement.executeUpdate(sql);
+				System.out.println("Connection successful");
+				if(count == 1){
+					success = true;
+				}
+			} catch (SQLException e){
+				System.out.println(e.getMessage());
+				success = false;
+			} finally {
+				try{
+					if (connection != null){
+						statement.close();
+						connection.close();
+					}
+				} catch (SQLException ex) {
+					System.out.println(ex.getMessage());
+				}
+			}
+
+			ResponseEntity responseEntity;
+			if(success){
+				responseEntity = new ResponseEntity<>("Account has been confirmed and you can now receive notifications.", HttpStatus.OK);
+			}
+			else{
+				responseEntity = new ResponseEntity<>("Error occured", HttpStatus.OK);
+			}
+
+			return responseEntity;
+		}
 
 		public boolean checkLoginKey(String userName, String loginKey){
 			boolean success = false;
