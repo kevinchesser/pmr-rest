@@ -31,7 +31,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 
-@CrossOrigin(origins = "https://tokyodrift.localtunnel.me")
+//@CrossOrigin(origins = "https://tokyodrift.localtunnel.me")
 @RestController
 public class UserController{
 
@@ -59,8 +59,9 @@ public class UserController{
 				String url = "jdbc:sqlite:../server/db/pmr.db";
 				connection = DriverManager.getConnection(url);
 				String sql = "INSERT INTO User(Username, Email, PasswordHash, PasswordSalt, PhoneNumber, Keywords, "
-						+ "ResetToken, ResetExpiration, ReceiveTexts, ReceiveEmails, LoginKey, LoginKeyExpiration, ServerPasswordSalt)"
-						+ " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)";
+						+ "ResetToken, ResetExpiration, ReceiveTexts, ReceiveEmails, LoginKey, LoginKeyExpiration, ServerPasswordSalt, "
+						+ "ConfirmToken)"
+						+ " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 				//String sql = "INSERT INTO User(Username, Email, PasswordHash, PasswordSalt, PhoneNumber, Keywords, "
 				//		+ "ResetToken, ResetExpiration, ReceiveTexts, ReceiveEmails, LoginKey, LoginKeyExpiration)"
 				//		+ " VALUES(?,?,?,?,?,?,?,?,?,?,?,?)";
@@ -73,8 +74,8 @@ public class UserController{
 				preparedStatement.setString(6, "");
 				preparedStatement.setString(7, "");
 				preparedStatement.setString(8, "");
-				preparedStatement.setFloat(9, resetTime);
-				preparedStatement.setFloat(10, resetTime);
+				preparedStatement.setFloat(9, 0); //Account is not yet confirmed so we set to 0
+				preparedStatement.setFloat(10, 0);//Account is not yet confirmed so we set to 0
 				preparedStatement.setString(11, loginKey);
 				preparedStatement.setFloat(12, loginResetTime);
 				preparedStatement.setString(13,  saltString);
@@ -704,6 +705,78 @@ public class UserController{
 
 			return responseEntity;
 		}
+		
+		
+		@RequestMapping(value="/sendAccountConfirmation", method = RequestMethod.POST)
+ 		public ResponseEntity<String> sendAccountConfirmation(@RequestParam(value = "userName", required = true) String username){
+ 			boolean success = false;
+ 			Connection connection = null;
+ 			ResultSet resultSet = null;
+ 			Statement statement = null;
+ 			String email = "";
+ 			String confirmationToken = "";
+ 			
+ 			try{
+ //				String url = "jdbc:sqlite:/var/db/pmr.db";
+ 				String url = "jdbc:sqlite:../server/db/pmr.db";
+ 				connection = DriverManager.getConnection(url);
+ 				String sql = "Select Email, ConfirmToken from User WHERE Username = '" + username + "';";
+ 				statement = connection.createStatement();
+ 				resultSet = statement.executeQuery(sql);
+ 				System.out.println("Connection successful");
+ 				if(resultSet.next()){
+ 					email = resultSet.getString("Email");
+ 					confirmationToken = resultSet.getString("ConfirmToken");
+ 					success = true;
+ 				} else{
+ 					success = false;
+ 				}
+ 			} catch (SQLException e){
+ 				System.out.println(e.getMessage());
+ 				success = false;
+ 			} finally {
+ 				try{
+ 					if (connection != null){
+ 						statement.close();
+ 						connection.close();
+ 					}
+ 				} catch (SQLException ex) {
+ 					System.out.println(ex.getMessage());
+ 				}
+ 			}
+ 			
+ 			Email from = new Email("");
+ 			String subject = "PMR Account Confirmation";
+ 			Email to = new Email(email);
+ 			Content content = new Content("text/plain", "Hello, please click this link to take you to confirm you account so you can start receiving notifications" +
+ 					 "\n2f2f2t2d.localtunnel.me/confirmAccount?token=" + confirmationToken + "&userName=" + username);
+ 			Mail mail = new Mail(from, subject, to, content);
+ 			SendGrid sg = new SendGrid("");
+ 			Request request = new Request();
+ 
+ 			try {
+ 			  request.method = Method.POST;
+ 			  request.endpoint = "mail/send";
+ 			  request.body = mail.build();
+ 			  Response response = sg.api(request);
+ 			  System.out.println(response.statusCode);
+ 			  System.out.println(response.body);
+ 			  System.out.println(response.headers);
+ 			} catch (IOException ex) {
+ 				System.out.println(ex.getMessage());
+ 			}
+ 			ResponseEntity responseEntity;
+ 			if(success){
+ 				responseEntity = new ResponseEntity<>("true", HttpStatus.OK);
+ 			}
+ 			else{
+ 				responseEntity = new ResponseEntity<>("false", HttpStatus.OK);
+ 			}
+ 
+ 			return responseEntity;
+ 		}
+ 
+ 		
 		
 		
 		public boolean checkLoginKey(String userName, String loginKey){
