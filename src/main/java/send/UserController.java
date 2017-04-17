@@ -31,7 +31,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 
-//@CrossOrigin(origins = "https://tokyodrift.localtunnel.me")
+@CrossOrigin(origins = "https://tokyodrift.localtunnel.me")
 @RestController
 public class UserController{
 
@@ -775,10 +775,7 @@ public class UserController{
  
  			return responseEntity;
  		}
- 
- 		
-		
-		
+
 		public boolean checkLoginKey(String userName, String loginKey){
 			boolean success = false;
 			Connection connection = null;
