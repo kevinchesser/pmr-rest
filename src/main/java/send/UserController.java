@@ -54,10 +54,11 @@ public class UserController{
 			Connection connection = null;
 			ResultSet resultSet = null;
 			Statement statement = null;
-			String[] values = new String[2]; //0 - salt, 1 - hash
-			values = getPasswordHash(passHash);
-			passHash = values[1];
-			String saltString = values[0];
+			//String[] values = new String[2]; //0 - salt, 1 - hash
+			//values = getPasswordHash(passHash);
+			//passHash = values[1];
+			//String saltString = values[0];
+			String saltString = "";
 
 			long resetTime = System.nanoTime() + 157700000000000000L;  //add one year in nanoseconds
 			long loginResetTime = System.nanoTime() + 3600000000000L;  //add one hour in nanoseconds
