@@ -82,8 +82,8 @@ public class UserController{
 				preparedStatement.setString(6, "");
 				preparedStatement.setString(7, "");
 				preparedStatement.setString(8, "");
-				preparedStatement.setFloat(9, resetTime); //Account is not yet confirmed so we set to 0
-				preparedStatement.setFloat(10, resetTime);//Account is not yet confirmed so we set to 0
+				preparedStatement.setFloat(9, 1); //Account is not yet confirmed so we set to 0
+				preparedStatement.setFloat(10, 1);//Account is not yet confirmed so we set to 0
 				preparedStatement.setString(11, loginKey);
 				preparedStatement.setFloat(12, loginResetTime);
 				preparedStatement.setString(13,  saltString);
