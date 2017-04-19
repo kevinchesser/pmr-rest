@@ -31,10 +31,17 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
+
 @CrossOrigin(origins = "https://tokyodrift.localtunnel.me")
+//@CrossOrigin(origins = "*")
 @RestController
 public class UserController{
 
+	GmailService service = new GmailService();
+	
 		@RequestMapping(value="/signup")
 		public ResponseEntity<String> send(@RequestParam(value="userName", required=true) String userName,
 				@RequestParam(value="email", required=true) String email,
@@ -753,7 +760,7 @@ public class UserController{
  			Mail mail = new Mail(from, subject, to, content);
  			SendGrid sg = new SendGrid("");
  			Request request = new Request();
- 
+//			GmailService.send(this.service.getService(), "to", "from", "subject", "content");
  			try {
  			  request.method = Method.POST;
  			  request.endpoint = "mail/send";
@@ -785,7 +792,6 @@ public class UserController{
 			ResultSet resultSet = null;
 			Statement statement = null;
 			int count;
-			
 			long resetTime = System.nanoTime() + 157700000000000000L;  //add five years in nanoseconds
 			
 			try{
