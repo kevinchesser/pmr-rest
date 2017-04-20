@@ -49,11 +49,11 @@ public class UserController{
 			Connection connection = null;
 			ResultSet resultSet = null;
 			Statement statement = null;
-			//String[] values = new String[2]; //0 - salt, 1 - hash
-			//values = getPasswordHash(passHash);
-			//passHash = values[1];
-			//String saltString = values[0];
-			String saltString = "";
+			String[] values = new String[2]; //0 - salt, 1 - hash
+			values = getPasswordHash(passHash);
+			passHash = values[1];
+			String saltString = values[0];
+//			String saltString = "";
 			IdentifierGenerator IdentifierGenerator = new IdentifierGenerator();
 			String confirmToken = IdentifierGenerator.nextSessionId();
 
