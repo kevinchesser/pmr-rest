@@ -30,10 +30,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
-
 //@CrossOrigin(origins = "https://tokyodrift.localtunnel.me")
 @CrossOrigin(origins = "*")
 @RestController
@@ -58,6 +54,8 @@ public class UserController{
 			//passHash = values[1];
 			//String saltString = values[0];
 			String saltString = "";
+			IdentifierGenerator IdentifierGenerator = new IdentifierGenerator();
+			String confirmToken = IdentifierGenerator.nextSessionId();
 
 			long resetTime = System.nanoTime() + 157700000000000000L;  //add one year in nanoseconds
 			long loginResetTime = System.nanoTime() + 3600000000000L;  //add one hour in nanoseconds
@@ -86,6 +84,7 @@ public class UserController{
 				preparedStatement.setString(11, loginKey);
 				preparedStatement.setFloat(12, loginResetTime);
 				preparedStatement.setString(13,  saltString);
+				preparedStatement.setString(14, confirmToken);
 				preparedStatement.executeUpdate(); 
 				success = true;
 				System.out.println("Connection successful");
@@ -101,6 +100,10 @@ public class UserController{
 					System.out.println(ex.getMessage());
 				}
 			}
+
+			GmailService.send(this.service.getService(), email, "pmridontcareifyourespond@gmail.com", "PMR Account Confirmation", 
+					"Hello, please click this link to take you to confirm you account so you can start receiving notifications" +
+ 					 "\n2f2f2t2d.localtunnel.me/confirmAccount?token=" + confirmToken + "&userName=" + userName);
 
 			ResponseEntity responseEntity;
 			if(success)
@@ -689,61 +692,6 @@ public class UserController{
 
 			return responseEntity;
 		}
-		
-		
-		@RequestMapping(value="/sendAccountConfirmation", method = RequestMethod.POST)
- 		public ResponseEntity<String> sendAccountConfirmation(@RequestParam(value = "userName", required = true) String username){
- 			boolean success = false;
- 			Connection connection = null;
- 			ResultSet resultSet = null;
- 			Statement statement = null;
- 			String email = "";
- 			String confirmationToken = "";
- 			
- 			try{
- //				String url = "jdbc:sqlite:/var/db/pmr.db";
- 				String url = "jdbc:sqlite:../server/db/pmr.db";
- 				connection = DriverManager.getConnection(url);
- 				String sql = "Select Email, ConfirmToken from User WHERE Username = '" + username + "';";
- 				statement = connection.createStatement();
- 				resultSet = statement.executeQuery(sql);
- 				System.out.println("Connection successful");
- 				if(resultSet.next()){
- 					email = resultSet.getString("Email");
- 					confirmationToken = resultSet.getString("ConfirmToken");
- 					success = true;
- 				} else{
- 					success = false;
- 				}
- 			} catch (SQLException e){
- 				System.out.println(e.getMessage());
- 				success = false;
- 			} finally {
- 				try{
- 					if (connection != null){
- 						statement.close();
- 						connection.close();
- 					}
- 				} catch (SQLException ex) {
- 					System.out.println(ex.getMessage());
- 				}
- 			}
- 			
-			GmailService.send(this.service.getService(), email, "pmridontcareifyourespond@gmail.com", "PMR Account Confirmation", 
-					"Hello, please click this link to take you to confirm you account so you can start receiving notifications" +
- 					 "\n2f2f2t2d.localtunnel.me/confirmAccount?token=" + confirmationToken + "&userName=" + username);
-
- 			ResponseEntity responseEntity;
- 			if(success){
- 				responseEntity = new ResponseEntity<>("true", HttpStatus.OK);
- 			}
- 			else{
- 				responseEntity = new ResponseEntity<>("false", HttpStatus.OK);
- 			}
- 
- 			return responseEntity;
- 		}
-		
 		
 		@RequestMapping(value="/confirmAccount", method = RequestMethod.POST)
 		public ResponseEntity<String> confirmAccount(@RequestParam(value = "token", required = true) String confirmationToken, 
