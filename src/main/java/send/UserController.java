@@ -67,9 +67,6 @@ public class UserController{
 						+ "ResetToken, ResetExpiration, ReceiveTexts, ReceiveEmails, LoginKey, LoginKeyExpiration, ServerPasswordSalt, "
 						+ "ConfirmToken)"
 						+ " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-				//String sql = "INSERT INTO User(Username, Email, PasswordHash, PasswordSalt, PhoneNumber, Keywords, "
-				//		+ "ResetToken, ResetExpiration, ReceiveTexts, ReceiveEmails, LoginKey, LoginKeyExpiration)"
-				//		+ " VALUES(?,?,?,?,?,?,?,?,?,?,?,?)";
 				PreparedStatement preparedStatement = connection.prepareStatement(sql);
 				preparedStatement.setString(1, userName);
 				preparedStatement.setString(2, email);
@@ -79,8 +76,8 @@ public class UserController{
 				preparedStatement.setString(6, "");
 				preparedStatement.setString(7, "");
 				preparedStatement.setString(8, "");
-				preparedStatement.setFloat(9, 1); //Account is not yet confirmed so we set to 0
-				preparedStatement.setFloat(10, 1);//Account is not yet confirmed so we set to 0
+				preparedStatement.setFloat(9, 0); //Account is not yet confirmed so we set to 0
+				preparedStatement.setFloat(10, 0);//Account is not yet confirmed so we set to 0
 				preparedStatement.setString(11, loginKey);
 				preparedStatement.setFloat(12, loginResetTime);
 				preparedStatement.setString(13,  saltString);
@@ -164,11 +161,12 @@ public class UserController{
 		public ResponseEntity<String> login(@RequestParam(value="userName", required=true) String userName,
 				@RequestParam(value="passHash", required=true) String passHash,
 				@RequestParam(value="loginKey", required=true) String loginKey){
-			boolean success = false;
+			int success = 0; //0 - failed credentials, 1 -- failed confirmation, 2 -- success
 		
 			Connection connection = null;
 			ResultSet resultSet = null;
 			Statement statement = null;
+			float receiveEmails = 0;
 			try{
 //				String url = "jdbc:sqlite:/var/db/pmr.db";
 				String url = "jdbc:sqlite:../server/db/pmr.db";
@@ -178,9 +176,11 @@ public class UserController{
 				statement = connection.createStatement();
 				resultSet = statement.executeQuery(sql);
 				if(resultSet.next()){
-					success = true;
+					receiveEmails = resultSet.getFloat("ReceiveEmails");
+					System.out.println("emails: " + receiveEmails);
+					success = 2;
 				} else{
-					success = false;
+					success = 0;
 				}
 				System.out.println("Connection successful");
 			} catch (SQLException e){
@@ -197,12 +197,20 @@ public class UserController{
 				}
 			}
 			updateLoginKey(userName, loginKey);
+			if(receiveEmails == 0){
+				success = 1;
+			}
 
 			ResponseEntity responseEntity;
-			if(success)
+			if(success == 0){
+				responseEntity = new ResponseEntity<>("credentials", HttpStatus.OK);
+			} else if(success == 1){
+				responseEntity = new ResponseEntity<>("confirmation", HttpStatus.OK);
+			} else if(success == 2){
 				responseEntity = new ResponseEntity<>("true", HttpStatus.OK);
-			else
+			} else{
 				responseEntity = new ResponseEntity<>("false", HttpStatus.OK);
+			}
 
 			return responseEntity;
 		}
