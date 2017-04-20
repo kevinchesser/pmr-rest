@@ -17,6 +17,8 @@ import com.google.api.services.gmail.model.*;
 import com.google.api.services.gmail.Gmail;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -91,10 +93,12 @@ public class GmailService {
      */
     public static Credential authorize() throws IOException {
         // Load client secrets.
+    	File initialFile = new File("src/main/java/resources/client_secret.json");
+    	InputStream targetStream = new FileInputStream(initialFile);
         InputStream in =
             GmailService.class.getResourceAsStream("/client_secret.json");
         GoogleClientSecrets clientSecrets =
-            GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
+            GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(targetStream));
 
         // Build flow and trigger user authorization request.
         GoogleAuthorizationCodeFlow flow =
