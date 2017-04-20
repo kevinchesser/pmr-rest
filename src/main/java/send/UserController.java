@@ -47,8 +47,6 @@ public class UserController{
 			
 			boolean success = false;
 			Connection connection = null;
-			ResultSet resultSet = null;
-			Statement statement = null;
 			//String[] values = new String[2]; //0 - salt, 1 - hash
 			//values = getPasswordHash(passHash);
 			//passHash = values[1];
@@ -165,16 +163,16 @@ public class UserController{
 		
 			Connection connection = null;
 			ResultSet resultSet = null;
-			Statement statement = null;
 			float receiveEmails = 0;
 			try{
 //				String url = "jdbc:sqlite:/var/db/pmr.db";
 				String url = "jdbc:sqlite:../server/db/pmr.db";
 				connection = DriverManager.getConnection(url);
-				String sql = "Select * from User WHERE Username='" + userName + "' AND PasswordHash='" + passHash + "';";
-				System.out.println(sql);
-				statement = connection.createStatement();
-				resultSet = statement.executeQuery(sql);
+				String sql = "Select * from User WHERE Username = ? AND PasswordHash = ?";
+				PreparedStatement preparedStatement = connection.prepareStatement(sql);
+				preparedStatement.setString(1, userName);
+				preparedStatement.setString(2, passHash);
+				resultSet = preparedStatement.executeQuery();
 				if(resultSet.next()){
 					receiveEmails = resultSet.getFloat("ReceiveEmails");
 					System.out.println("emails: " + receiveEmails);
@@ -189,7 +187,6 @@ public class UserController{
 				try{
 					if (connection != null){
 						resultSet.close();
-						statement.close();
 						connection.close();
 					}
 				} catch (SQLException ex) {
