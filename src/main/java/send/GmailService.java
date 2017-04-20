@@ -93,7 +93,7 @@ public class GmailService {
      */
     public static Credential authorize() throws IOException {
         // Load client secrets.
-    	File initialFile = new File("src/main/java/resources/client_secret.json");
+    	File initialFile = new File("src/main/resources/client_secret.json");
     	InputStream targetStream = new FileInputStream(initialFile);
         InputStream in =
             GmailService.class.getResourceAsStream("/client_secret.json");

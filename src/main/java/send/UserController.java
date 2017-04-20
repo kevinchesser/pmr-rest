@@ -95,10 +95,12 @@ public class UserController{
 					System.out.println(ex.getMessage());
 				}
 			}
-
-			GmailService.send(this.service.getService(), email, "pmridontcareifyourespond@gmail.com", "PMR Account Confirmation", 
-					"Hello, please click this link to take you to confirm you account so you can start receiving notifications" +
- 					 "\n2f2f2t2d.localtunnel.me/confirmAccount?token=" + confirmToken + "&userName=" + userName);
+			
+			if(success == true){
+				GmailService.send(this.service.getService(), email, "pmridontcareifyourespond@gmail.com", "PMR Account Confirmation", 
+						"Hello, please click this link to take you to confirm you account so you can start receiving notifications" +
+						  "\n2f2f2t2d.localtunnel.me/confirmAccount?token=" + confirmToken + "&userName=" + userName);
+			}
 
 			ResponseEntity responseEntity;
 			if(success)
