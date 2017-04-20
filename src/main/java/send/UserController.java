@@ -17,7 +17,6 @@ import org.abstractj.kalium.encoders.Hex;
 import org.abstractj.kalium.encoders.Raw;
 import com.google.gson.*;
 
-import com.sendgrid.*;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
