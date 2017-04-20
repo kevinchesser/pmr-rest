@@ -35,8 +35,8 @@ import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
-@CrossOrigin(origins = "https://tokyodrift.localtunnel.me")
-//@CrossOrigin(origins = "*")
+//@CrossOrigin(origins = "https://tokyodrift.localtunnel.me")
+@CrossOrigin(origins = "*")
 @RestController
 public class UserController{
 
@@ -369,33 +369,10 @@ public class UserController{
 				String timeString = Long.toString(time);
 				updateResetToken(email, resetToken, timeString);
 
-				/*Hash hash = new Hash();
-				Hex hex = new Hex();
-				String hashedToken = hash.sha256(resetToken, hex);
-				*/
-				
-				Email from = new Email("");
-				String subject = "PMR Password reset request";
-				//Email to = new Email(email);
-				Email to = new Email(email);
-				Content content = new Content("text/plain", "Hello, please click this link to take you to a password reset page"
-						+ "\npmr.com/resetpassword?token=" + resetToken + "&email=" + email);
-				Mail mail = new Mail(from, subject, to, content);
-				SendGrid sg = new SendGrid("");
-				Request request = new Request();
-				
+				GmailService.send(this.service.getService(), email, "pmridontcareifyourespond@gmail.com", "PMR Account Confirmation", 
+						"Hello, please click this link to take you to a password reset page" +
+	 					 "\n2f2f2t2d.localtunnel.me/resetpassword?token=" + resetToken + "&email=" + email);
 
-				try {
-				  request.method = Method.POST;
-				  request.endpoint = "mail/send";
-				  request.body = mail.build();
-				  Response response = sg.api(request);
-				  System.out.println(response.statusCode);
-				  System.out.println(response.body);
-				  System.out.println(response.headers);
-				} catch (IOException ex) {
-				  throw ex;
-				}
 				responseEntity = new ResponseEntity<>("true", HttpStatus.OK);
 				System.out.println("Sending recovery email to " + email);
 			}
@@ -752,26 +729,10 @@ public class UserController{
  				}
  			}
  			
- 			Email from = new Email("");
- 			String subject = "PMR Account Confirmation";
- 			Email to = new Email(email);
- 			Content content = new Content("text/plain", "Hello, please click this link to take you to confirm you account so you can start receiving notifications" +
+			GmailService.send(this.service.getService(), email, "pmridontcareifyourespond@gmail.com", "PMR Account Confirmation", 
+					"Hello, please click this link to take you to confirm you account so you can start receiving notifications" +
  					 "\n2f2f2t2d.localtunnel.me/confirmAccount?token=" + confirmationToken + "&userName=" + username);
- 			Mail mail = new Mail(from, subject, to, content);
- 			SendGrid sg = new SendGrid("");
- 			Request request = new Request();
-//			GmailService.send(this.service.getService(), "to", "from", "subject", "content");
- 			try {
- 			  request.method = Method.POST;
- 			  request.endpoint = "mail/send";
- 			  request.body = mail.build();
- 			  Response response = sg.api(request);
- 			  System.out.println(response.statusCode);
- 			  System.out.println(response.body);
- 			  System.out.println(response.headers);
- 			} catch (IOException ex) {
- 				System.out.println(ex.getMessage());
- 			}
+
  			ResponseEntity responseEntity;
  			if(success){
  				responseEntity = new ResponseEntity<>("true", HttpStatus.OK);
