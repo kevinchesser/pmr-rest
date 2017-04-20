@@ -121,10 +121,11 @@ public class UserController{
 //				String url = "jdbc:sqlite:/var/db/pmr.db";
 				String url = "jdbc:sqlite:../server/db/pmr.db";
 				connection = DriverManager.getConnection(url);
-				String sql = "Select * from User WHERE Username='" + userName + "';";
-				System.out.println(sql);
 				statement = connection.createStatement();
-				resultSet = statement.executeQuery(sql);
+				String sql = "Select * from User WHERE Username = ?";
+				PreparedStatement preparedStatement = connection.prepareStatement(sql);
+				preparedStatement.setString(1, userName);
+				resultSet = preparedStatement.executeQuery();
 				if(resultSet.next()){
 					salt = resultSet.getString("PasswordSalt");
 					success = true;
@@ -698,7 +699,7 @@ public class UserController{
 			return responseEntity;
 		}
 		
-		@RequestMapping(value="/confirmAccount", method = RequestMethod.POST)
+		@RequestMapping(value="/confirmAccount", method = RequestMethod.GET)
 		public ResponseEntity<String> confirmAccount(@RequestParam(value = "token", required = true) String confirmationToken, 
 				@RequestParam(value = "userName", required = true) String username){
 			boolean success = false;
