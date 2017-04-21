@@ -650,16 +650,17 @@ public class UserController{
 				@RequestParam(value = "loginKey", required = true) String loginKey){
 			boolean success = false;
 			Connection connection = null;
-			ResultSet resultSet = null;
-			Statement statement = null;
 			
 			try{
 //				String url = "jdbc:sqlite:/var/db/pmr.db";
 				String url = "jdbc:sqlite:../server/db/pmr.db";
 				connection = DriverManager.getConnection(url);
-				String sql = "UPDATE User SET LoginKey = '\"\"' WHERE Username = '" + username + "' AND LoginKey = '" + loginKey +"';";
-				statement = connection.createStatement();
-				statement.executeUpdate(sql);
+				String sql = "UPDATE User SET LoginKey = ? WHERE Username = ? AND LoginKey = ?";
+				PreparedStatement preparedStatement = connection.prepareStatement(sql);
+				preparedStatement.setString(1, "");
+				preparedStatement.setString(2, username);
+				preparedStatement.setString(3, loginKey);
+				preparedStatement.executeUpdate();	
 				System.out.println("Connection successful");
 				success = true;
 			} catch (SQLException e){
@@ -668,7 +669,6 @@ public class UserController{
 			} finally {
 				try{
 					if (connection != null){
-						statement.close();
 						connection.close();
 					}
 				} catch (SQLException ex) {
