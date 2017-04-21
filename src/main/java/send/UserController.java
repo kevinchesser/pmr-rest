@@ -780,23 +780,18 @@ PreparedStatement preparedStatement = connection.prepareStatement(sql);
 		
 		public void updateLoginKey(String username, String loginKey){
 			Connection connection = null;
-			Statement statement = null;
-			ResultSet resultSet = null;
 			long loginResetTime = System.nanoTime() + 3600000000000L;  //add one hour in nanoseconds
 
 			try{
 				//String url = "jdbc:sqlite:/var/db/pmr.db";
 				String url = "jdbc:sqlite:../server/db/pmr.db";
 				connection = DriverManager.getConnection(url);
-				String sql = "UPDATE User SET LoginKey = '" + loginKey + "', LoginKeyExpiration = '" + loginResetTime + "' WHERE Username = '" + username + "';";
-				System.out.println(sql);
-				statement = connection.createStatement();
-				statement.executeQuery(sql);
-				/*PreparedStatement preparedStatement = connection.prepareStatement(sql);
-				preparedStatement.setString(1, token);
-				preparedStatement.setString(2, timeExpiration);
-				preparedStatement.setString(3, email);
-				preparedStatement.executeUpdate(); */
+				String sql = "UPDATE User SET LoginKey = ?, LoginKeyExpiration = ? WHERE Username = ?";
+				PreparedStatement preparedStatement = connection.prepareStatement(sql);
+				preparedStatement.setString(1, loginKey);
+				preparedStatement.setFloat(2, loginResetTime);
+				preparedStatement.setString(3, username);
+				preparedStatement.executeUpdate();
 				System.out.println("Connection successful");
 			} catch (SQLException e){
 				System.out.println(e.getMessage());
