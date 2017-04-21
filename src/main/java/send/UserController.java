@@ -47,7 +47,6 @@ public class UserController{
 			
 			boolean success = false;
 			Connection connection = null;
-<<<<<<< HEAD
 			ResultSet resultSet = null;
 			Statement statement = null;
 			String[] values = new String[2]; //0 - salt, 1 - hash
@@ -55,13 +54,6 @@ public class UserController{
 			passHash = values[1];
 			String saltString = values[0];
 //			String saltString = "";
-=======
-			//String[] values = new String[2]; //0 - salt, 1 - hash
-			//values = getPasswordHash(passHash);
-			//passHash = values[1];
-			//String saltString = values[0];
-			String saltString = "";
->>>>>>> windows
 			IdentifierGenerator IdentifierGenerator = new IdentifierGenerator();
 			String confirmToken = IdentifierGenerator.nextSessionId();
 
