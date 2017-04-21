@@ -47,6 +47,7 @@ public class UserController{
 			
 			boolean success = false;
 			Connection connection = null;
+<<<<<<< HEAD
 			ResultSet resultSet = null;
 			Statement statement = null;
 			String[] values = new String[2]; //0 - salt, 1 - hash
@@ -54,6 +55,13 @@ public class UserController{
 			passHash = values[1];
 			String saltString = values[0];
 //			String saltString = "";
+=======
+			//String[] values = new String[2]; //0 - salt, 1 - hash
+			//values = getPasswordHash(passHash);
+			//passHash = values[1];
+			//String saltString = values[0];
+			String saltString = "";
+>>>>>>> windows
 			IdentifierGenerator IdentifierGenerator = new IdentifierGenerator();
 			String confirmToken = IdentifierGenerator.nextSessionId();
 
@@ -97,10 +105,12 @@ public class UserController{
 					System.out.println(ex.getMessage());
 				}
 			}
-
-			GmailService.send(this.service.getService(), email, "pmridontcareifyourespond@gmail.com", "PMR Account Confirmation", 
-					"Hello, please click this link to take you to confirm you account so you can start receiving notifications" +
- 					 "\n2f2f2t2d.localtunnel.me/confirmAccount?token=" + confirmToken + "&userName=" + userName);
+			
+			if(success == true){
+				GmailService.send(this.service.getService(), email, "pmridontcareifyourespond@gmail.com", "PMR Account Confirmation", 
+						"Hello, please click this link to take you to confirm you account so you can start receiving notifications" +
+						  "\n2f2f2t2d.localtunnel.me/confirmAccount?token=" + confirmToken + "&userName=" + userName);
+			}
 
 			ResponseEntity responseEntity;
 			if(success)
@@ -123,10 +133,11 @@ public class UserController{
 //				String url = "jdbc:sqlite:/var/db/pmr.db";
 				String url = "jdbc:sqlite:../server/db/pmr.db";
 				connection = DriverManager.getConnection(url);
-				String sql = "Select * from User WHERE Username='" + userName + "';";
-				System.out.println(sql);
 				statement = connection.createStatement();
-				resultSet = statement.executeQuery(sql);
+				String sql = "Select * from User WHERE Username = ?";
+				PreparedStatement preparedStatement = connection.prepareStatement(sql);
+				preparedStatement.setString(1, userName);
+				resultSet = preparedStatement.executeQuery();
 				if(resultSet.next()){
 					salt = resultSet.getString("PasswordSalt");
 					success = true;
@@ -165,16 +176,16 @@ public class UserController{
 		
 			Connection connection = null;
 			ResultSet resultSet = null;
-			Statement statement = null;
 			float receiveEmails = 0;
 			try{
 //				String url = "jdbc:sqlite:/var/db/pmr.db";
 				String url = "jdbc:sqlite:../server/db/pmr.db";
 				connection = DriverManager.getConnection(url);
-				String sql = "Select * from User WHERE Username='" + userName + "' AND PasswordHash='" + passHash + "';";
-				System.out.println(sql);
-				statement = connection.createStatement();
-				resultSet = statement.executeQuery(sql);
+				String sql = "Select * from User WHERE Username = ? AND PasswordHash = ?";
+				PreparedStatement preparedStatement = connection.prepareStatement(sql);
+				preparedStatement.setString(1, userName);
+				preparedStatement.setString(2, passHash);
+				resultSet = preparedStatement.executeQuery();
 				if(resultSet.next()){
 					receiveEmails = resultSet.getFloat("ReceiveEmails");
 					System.out.println("emails: " + receiveEmails);
@@ -189,7 +200,6 @@ public class UserController{
 				try{
 					if (connection != null){
 						resultSet.close();
-						statement.close();
 						connection.close();
 					}
 				} catch (SQLException ex) {
@@ -222,7 +232,6 @@ public class UserController{
 		
 			Connection connection = null;
 			ResultSet resultSet = null;
-			Statement statement = null;
 			float receiveEmails = 0;
 			float receiveTexts = 0;
 			NotificationSettings notificationSettings = new NotificationSettings();
@@ -230,10 +239,11 @@ public class UserController{
 //				String url = "jdbc:sqlite:/var/db/pmr.db";
 				String url = "jdbc:sqlite:../server/db/pmr.db";
 				connection = DriverManager.getConnection(url);
-				String sql = "Select ReceiveEmails, ReceiveTexts from User WHERE Username='" + userName + "' AND LoginKey='" + loginKey + "';";
-				System.out.println(sql);
-				statement = connection.createStatement();
-				resultSet = statement.executeQuery(sql);
+				String sql = "Select ReceiveEmails, ReceiveTexts from User WHERE Username = ? AND LoginKey = ?";
+				PreparedStatement preparedStatement = connection.prepareStatement(sql);
+				preparedStatement.setString(1, userName);
+				preparedStatement.setString(2, loginKey);
+				resultSet = preparedStatement.executeQuery();
 				if(resultSet.next()){
 					success = true;
 					receiveEmails = resultSet.getFloat("ReceiveEmails");
@@ -248,7 +258,6 @@ public class UserController{
 				try{
 					if (connection != null){
 						resultSet.close();
-						statement.close();
 						connection.close();
 					}
 				} catch (SQLException ex) {
@@ -286,8 +295,6 @@ public class UserController{
 				@RequestParam(value = "loginKey", required = true) String loginKey){
 			boolean success = false;
 			Connection connection = null;
-			ResultSet resultSet = null;
-			Statement statement = null;
 
 			if(receiveEmails == 1.0){
 				receiveEmails = System.nanoTime() + (suspendNotifs * 3600000000000L);
@@ -299,14 +306,17 @@ public class UserController{
 			} else{
 				receiveTexts = System.nanoTime() + 157700000000000000L;
 			}
-
+			
 			try{
 //				String url = "jdbc:sqlite:/var/db/pmr.db";
 				String url = "jdbc:sqlite:../server/db/pmr.db";
 				connection = DriverManager.getConnection(url);
-				String sql = "UPDATE User SET ReceiveTexts = " + receiveTexts + ", ReceiveEmails = " + receiveEmails + " WHERE Username = '" + userName + "';";
-				statement = connection.createStatement();
-				statement.executeUpdate(sql);
+				String sql = "UPDATE User SET ReceiveTexts = ? , ReceiveEmails = ? WHERE Username = ?";
+				PreparedStatement preparedStatement = connection.prepareStatement(sql);
+				preparedStatement.setFloat(1, receiveTexts);
+				preparedStatement.setFloat(2, receiveEmails);
+				preparedStatement.setString(3, userName);
+				preparedStatement.executeUpdate();
 				System.out.println("Connection successful");
 				success = true;
 			} catch (SQLException e){
@@ -315,7 +325,6 @@ public class UserController{
 			} finally {
 				try{
 					if (connection != null){
-						statement.close();
 						connection.close();
 					}
 				} catch (SQLException ex) {
@@ -342,16 +351,16 @@ public class UserController{
 			boolean success = false;
 			Connection connection = null;
 			ResultSet resultSet = null;
-			Statement statement = null;
 			
 			try{
 				//String url = "jdbc:sqlite:/var/db/pmr.db";
 				String url = "jdbc:sqlite:../server/db/pmr.db";
 				connection = DriverManager.getConnection(url);
-				String sql = "Select * from User WHERE Email='" + email + "';";
-				System.out.println(sql);
-				statement = connection.createStatement();
-				resultSet = statement.executeQuery(sql);
+				String sql = "Select * from User WHERE Email = ?";
+				PreparedStatement preparedStatement = connection.prepareStatement(sql);
+				preparedStatement.setString(1, email);
+				resultSet = preparedStatement.executeQuery();
+
 				if(resultSet.next()){
 					success = true;
 				} else{
@@ -364,7 +373,6 @@ public class UserController{
 				try{
 					if (connection != null){
 						resultSet.close();
-						statement.close();
 						connection.close();
 					}
 				} catch (SQLException ex) {
@@ -380,9 +388,9 @@ public class UserController{
 				String timeString = Long.toString(time);
 				updateResetToken(email, resetToken, timeString);
 
-				GmailService.send(this.service.getService(), email, "pmridontcareifyourespond@gmail.com", "PMR Account Confirmation", 
+				GmailService.send(this.service.getService(), email, "pmridontcareifyourespond@gmail.com", "PMR Password Reset", 
 						"Hello, please click this link to take you to a password reset page" +
-	 					 "\n2f2f2t2d.localtunnel.me/resetpassword?token=" + resetToken + "&email=" + email);
+	 					 "\tokyodrift.localtunnel.me/resetpassword?token=" + resetToken + "&email=" + email);
 
 				responseEntity = new ResponseEntity<>("true", HttpStatus.OK);
 				System.out.println("Sending recovery email to " + email);
@@ -394,6 +402,7 @@ public class UserController{
 			
 			return responseEntity;
 		}
+
 		//TODO:Refactor with backend salting and hashing
 		@RequestMapping(value="/resetpassword")
 		public ResponseEntity<String> resetPassword(@RequestParam(value = "token", required=true)String token,
@@ -408,16 +417,16 @@ public class UserController{
 			boolean secondarySuccess = false;
 			Connection connection = null;
 			ResultSet resultSet = null;
-			Statement statement = null;
 			
 			try{
 				//String url = "jdbc:sqlite:/var/db/pmr.db";
 				String url = "jdbc:sqlite:../server/db/pmr.db";
 				connection = DriverManager.getConnection(url);
-				String sql = "Select ResetExpiration from User WHERE Email='" + email + "';";
-				System.out.println(sql);
-				statement = connection.createStatement();
-				resultSet = statement.executeQuery(sql);
+				String sql = "Select ResetExpiration from User WHERE Email = ?";
+				PreparedStatement preparedStatement = connection.prepareStatement(sql);
+				preparedStatement.setString(1, email);
+				resultSet = preparedStatement.executeQuery();
+
 				if(resultSet.next()){
 					initialSuccess = true;
 					resetString = resultSet.getString("ResetExpiration");
@@ -431,7 +440,6 @@ public class UserController{
 				try{
 					if (connection != null){
 						resultSet.close();
-						statement.close();
 						connection.close();
 					}
 				} catch (SQLException ex) {
@@ -448,15 +456,13 @@ public class UserController{
 						//String url = "jdbc:sqlite:/var/db/pmr.db";
 						String url = "jdbc:sqlite:../server/db/pmr.db";
 						connection = DriverManager.getConnection(url);
-						String sql = "UPDATE User SET PasswordHash = '" + passwordHash + "', PasswordSalt = '" + passwordSalt + "', ResetExpiration = '0' WHERE Email = '" + email + "';";
-						System.out.println(sql);
-						statement = connection.createStatement();
-						statement.executeQuery(sql);
-						/*PreparedStatement preparedStatement = connection.prepareStatement(sql);
-						preparedStatement.setString(1, token);
-						preparedStatement.setString(2, timeExpiration);
-						preparedStatement.setString(3, email);
-						preparedStatement.executeUpdate(); */
+						String sql = "UPDATE User SET PasswordHash = ?, PasswordSalt = ?, ResetExpiration = ? WHERE Email = ?";
+						PreparedStatement preparedStatement = connection.prepareStatement(sql);
+						preparedStatement.setString(1, passwordHash);
+						preparedStatement.setString(2, passwordSalt);
+						preparedStatement.setString(3, "0");
+						preparedStatement.setString(4, email);
+						preparedStatement.executeUpdate();		
 						System.out.println("Connection successful");
 					} catch (SQLException e){
 						System.out.println(e.getMessage());
@@ -464,7 +470,6 @@ public class UserController{
 						try{
 							if (connection != null){
 								resultSet.close();
-								statement.close();
 								connection.close();
 							}
 						} catch (SQLException ex) {
@@ -548,32 +553,26 @@ public class UserController{
 		@RequestMapping(value="/retrieveFavorites")
 		public ResponseEntity<String> retrieveFavorites(@RequestParam(value="userName", required=true) String userName,
 				@RequestParam(value="loginKey", required=true) String loginKey){
-			
-			////////////////////////////////////////////////
-			
 			boolean success = false;
 			PlayerList playerList = new PlayerList();
 			ArrayList<Player> players = new ArrayList<Player>();
 			Connection connection = null;
 			ResultSet resultSet = null;
-			Statement statement = null;
-			
 			
 			try{
 				String url = "jdbc:sqlite:../server/db/pmr.db";
 				connection = DriverManager.getConnection(url);
-				String sql = "Select * from User WHERE Username='" + userName + "';";
-				statement = connection.createStatement();
-				resultSet = statement.executeQuery(sql);
+				String sql = "Select * from User WHERE Username = ?";
+				PreparedStatement preparedStatement = connection.prepareStatement(sql);
+				preparedStatement.setString(1, userName);
+				resultSet = preparedStatement.executeQuery();
 				if(resultSet.next()){ //for each record in the result set need to iterate over all entries delimited by &
-					System.out.println("Result set is " + resultSet.getString("Keywords"));
 					String[] tokens = resultSet.getString("Keywords").split(Pattern.quote("&"));;
 					for (String player : tokens) {
 						Player aPlayer = new Player("", "", player);
 						players.add(aPlayer);
 					}
 					success = true;
-					
 					playerList.setList(players);
 				} else{
 					success = false;
@@ -585,16 +584,12 @@ public class UserController{
 				try{
 					if (connection != null){
 						resultSet.close();
-						statement.close();
 						connection.close();
 					}
 				} catch (SQLException ex) {
 					System.out.println(ex.getMessage());
 				}
 			}
-			
-			////////////////////////////////////////////
-			
 			
 			boolean validLoginKey = checkLoginKey(userName, loginKey);
 			playerList.setList(players);
@@ -616,37 +611,38 @@ public class UserController{
 			PlayerList playerList = new PlayerList();
 			ArrayList<Player> players = new ArrayList<Player>();
 			Connection connection = null;
-			ResultSet resultSet = null;
-			Statement statement = null;
 			keywords = keywords.replace("|", "&");
 			keywords = keywords.replace("'", "''");
 			System.out.println(keywords);
 			
-			try{
-//				String url = "jdbc:sqlite:/var/db/pmr.db";
-				String url = "jdbc:sqlite:../server/db/pmr.db";
-				connection = DriverManager.getConnection(url);
-				String sql = "UPDATE User SET Keywords = '" + keywords + "' WHERE Username = '" + username + "';";
-				statement = connection.createStatement();
-				statement.executeUpdate(sql);
-				System.out.println("Connection successful");
-				success = true;
-			} catch (SQLException e){
-				System.out.println(e.getMessage());
-				success = false;
-			} finally {
+			boolean validLoginKey = checkLoginKey(username, loginKey);
+			if(validLoginKey){
 				try{
-					if (connection != null){
-						statement.close();
-						connection.close();
+//					String url = "jdbc:sqlite:/var/db/pmr.db";
+					String url = "jdbc:sqlite:../server/db/pmr.db";
+					connection = DriverManager.getConnection(url);
+					String sql = "UPDATE User SET Keywords = ? WHERE Username = ?";
+					PreparedStatement preparedStatement = connection.prepareStatement(sql);
+					preparedStatement.setString(1, keywords);
+					preparedStatement.setString(2, username);
+					preparedStatement.executeUpdate();	
+					System.out.println("Connection successful");
+					success = true;
+				} catch (SQLException e){
+					System.out.println(e.getMessage());
+					success = false;
+				} finally {
+					try{
+						if (connection != null){
+							connection.close();
+						}
+					} catch (SQLException ex) {
+						System.out.println(ex.getMessage());
 					}
-				} catch (SQLException ex) {
-					System.out.println(ex.getMessage());
 				}
 			}
 
 
-			boolean validLoginKey = checkLoginKey(username, loginKey);
 			
 			ResponseEntity responseEntity;
 			if(success && validLoginKey){
@@ -664,16 +660,17 @@ public class UserController{
 				@RequestParam(value = "loginKey", required = true) String loginKey){
 			boolean success = false;
 			Connection connection = null;
-			ResultSet resultSet = null;
-			Statement statement = null;
 			
 			try{
 //				String url = "jdbc:sqlite:/var/db/pmr.db";
 				String url = "jdbc:sqlite:../server/db/pmr.db";
 				connection = DriverManager.getConnection(url);
-				String sql = "UPDATE User SET LoginKey = '\"\"' WHERE Username = '" + username + "' AND LoginKey = '" + loginKey +"';";
-				statement = connection.createStatement();
-				statement.executeUpdate(sql);
+				String sql = "UPDATE User SET LoginKey = ? WHERE Username = ? AND LoginKey = ?";
+				PreparedStatement preparedStatement = connection.prepareStatement(sql);
+				preparedStatement.setString(1, "");
+				preparedStatement.setString(2, username);
+				preparedStatement.setString(3, loginKey);
+				preparedStatement.executeUpdate();	
 				System.out.println("Connection successful");
 				success = true;
 			} catch (SQLException e){
@@ -682,7 +679,6 @@ public class UserController{
 			} finally {
 				try{
 					if (connection != null){
-						statement.close();
 						connection.close();
 					}
 				} catch (SQLException ex) {
@@ -701,13 +697,11 @@ public class UserController{
 			return responseEntity;
 		}
 		
-		@RequestMapping(value="/confirmAccount", method = RequestMethod.POST)
+		@RequestMapping(value="/confirmAccount", method = RequestMethod.GET)
 		public ResponseEntity<String> confirmAccount(@RequestParam(value = "token", required = true) String confirmationToken, 
 				@RequestParam(value = "userName", required = true) String username){
 			boolean success = false;
 			Connection connection = null;
-			ResultSet resultSet = null;
-			Statement statement = null;
 			int count;
 			long resetTime = System.nanoTime() + 157700000000000000L;  //add five years in nanoseconds
 			
@@ -715,9 +709,13 @@ public class UserController{
 //				String url = "jdbc:sqlite:/var/db/pmr.db";
 				String url = "jdbc:sqlite:../server/db/pmr.db";
 				connection = DriverManager.getConnection(url);
-				String sql = "UPDATE User SET ReceiveTexts = '" + resetTime + "', ReceiveEmails = '" + resetTime + "' WHERE Username = '" + username + "' AND ConfirmToken='" + confirmationToken + "';";
-				statement = connection.createStatement();
-				count = statement.executeUpdate(sql);
+				String sql = "UPDATE User SET ReceiveTexts = ?, ReceiveEmails = ? WHERE Username = ? AND ConfirmToken = ?";
+				PreparedStatement preparedStatement = connection.prepareStatement(sql);
+				preparedStatement.setFloat(1, resetTime);
+				preparedStatement.setFloat(2, resetTime);
+				preparedStatement.setString(3, username);
+				preparedStatement.setString(4, confirmationToken);
+				count = preparedStatement.executeUpdate();
 				System.out.println("Connection successful");
 				if(count == 1){
 					success = true;
@@ -728,7 +726,6 @@ public class UserController{
 			} finally {
 				try{
 					if (connection != null){
-						statement.close();
 						connection.close();
 					}
 				} catch (SQLException ex) {
@@ -751,15 +748,15 @@ public class UserController{
 			boolean success = false;
 			Connection connection = null;
 			ResultSet resultSet = null;
-			Statement statement = null;
 			try{
 //				String url = "jdbc:sqlite:/var/db/pmr.db";
 				String url = "jdbc:sqlite:../server/db/pmr.db";
 				connection = DriverManager.getConnection(url);
-				String sql = "Select * from User WHERE Username='" + userName + "' AND LoginKey='" + loginKey + "';";
-				System.out.println(sql);
-				statement = connection.createStatement();
-				resultSet = statement.executeQuery(sql);
+				String sql = "Select * from User WHERE Username = ? AND LoginKey = ?";
+				PreparedStatement preparedStatement = connection.prepareStatement(sql);
+				preparedStatement.setString(1, userName);
+				preparedStatement.setString(2, loginKey);
+				resultSet = preparedStatement.executeQuery();
 				if(resultSet.next()){
 					success = true;
 				} else{
@@ -772,7 +769,6 @@ public class UserController{
 				try{
 					if (connection != null){
 						resultSet.close();
-						statement.close();
 						connection.close();
 					}
 				} catch (SQLException ex) {
@@ -785,23 +781,18 @@ public class UserController{
 		
 		public void updateLoginKey(String username, String loginKey){
 			Connection connection = null;
-			Statement statement = null;
-			ResultSet resultSet = null;
 			long loginResetTime = System.nanoTime() + 3600000000000L;  //add one hour in nanoseconds
 
 			try{
 				//String url = "jdbc:sqlite:/var/db/pmr.db";
 				String url = "jdbc:sqlite:../server/db/pmr.db";
 				connection = DriverManager.getConnection(url);
-				String sql = "UPDATE User SET LoginKey = '" + loginKey + "', LoginKeyExpiration = '" + loginResetTime + "' WHERE Username = '" + username + "';";
-				System.out.println(sql);
-				statement = connection.createStatement();
-				statement.executeQuery(sql);
-				/*PreparedStatement preparedStatement = connection.prepareStatement(sql);
-				preparedStatement.setString(1, token);
-				preparedStatement.setString(2, timeExpiration);
-				preparedStatement.setString(3, email);
-				preparedStatement.executeUpdate(); */
+				String sql = "UPDATE User SET LoginKey = ?, LoginKeyExpiration = ? WHERE Username = ?";
+				PreparedStatement preparedStatement = connection.prepareStatement(sql);
+				preparedStatement.setString(1, loginKey);
+				preparedStatement.setFloat(2, loginResetTime);
+				preparedStatement.setString(3, username);
+				preparedStatement.executeUpdate();
 				System.out.println("Connection successful");
 			} catch (SQLException e){
 				System.out.println(e.getMessage());
@@ -820,23 +811,17 @@ public class UserController{
 		
 		public void updateResetToken(String email, String token, String timeExpiration){
 			Connection connection = null;
-			Statement statement = null;
-			ResultSet resultSet = null;
-			System.out.println(email + " " + token + " " + timeExpiration);
 			
 			try{
 				//String url = "jdbc:sqlite:/var/db/pmr.db";
 				String url = "jdbc:sqlite:../server/db/pmr.db";
 				connection = DriverManager.getConnection(url);
-				String sql = "UPDATE User SET ResetToken = '" + token + "', ResetExpiration = '" + timeExpiration + "' WHERE Email = '" + email + "';";
-				System.out.println(sql);
-				statement = connection.createStatement();
-				statement.executeQuery(sql);
-				/*PreparedStatement preparedStatement = connection.prepareStatement(sql);
+				String sql = "UPDATE User SET ResetToken = ?, ResetExpiration = ? WHERE Email = ?";
+				PreparedStatement preparedStatement = connection.prepareStatement(sql);
 				preparedStatement.setString(1, token);
 				preparedStatement.setString(2, timeExpiration);
 				preparedStatement.setString(3, email);
-				preparedStatement.executeUpdate(); */
+				preparedStatement.executeUpdate();
 				System.out.println("Connection successful");
 			} catch (SQLException e){
 				System.out.println(e.getMessage());
