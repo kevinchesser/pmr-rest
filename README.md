@@ -20,6 +20,6 @@ Other PMR Repos:
 
 [pmr-web](https://github.com/jaxmann/pmr-web)
 
-#Usage
+## Usage
 For this to function properly you need a SQLite3 database with the table definitions defined in the pmr-server repo in the db/ directory. Then you will have to update the connection url within UserController.java.
 To run this program just use the command `./gradlew bootRun` This will start the rest controller on localhost:8080 and you will be able to access the endpoints at http://localhost:8080/endpoint
