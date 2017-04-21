@@ -222,7 +222,6 @@ public class UserController{
 		
 			Connection connection = null;
 			ResultSet resultSet = null;
-			Statement statement = null;
 			float receiveEmails = 0;
 			float receiveTexts = 0;
 			NotificationSettings notificationSettings = new NotificationSettings();
@@ -230,10 +229,11 @@ public class UserController{
 //				String url = "jdbc:sqlite:/var/db/pmr.db";
 				String url = "jdbc:sqlite:../server/db/pmr.db";
 				connection = DriverManager.getConnection(url);
-				String sql = "Select ReceiveEmails, ReceiveTexts from User WHERE Username='" + userName + "' AND LoginKey='" + loginKey + "';";
-				System.out.println(sql);
-				statement = connection.createStatement();
-				resultSet = statement.executeQuery(sql);
+				String sql = "Select ReceiveEmails, ReceiveTexts from User WHERE Username = ? AND LoginKey = ?";
+				PreparedStatement preparedStatement = connection.prepareStatement(sql);
+				preparedStatement.setString(1, userName);
+				preparedStatement.setString(2, loginKey);
+				resultSet = preparedStatement.executeQuery();
 				if(resultSet.next()){
 					success = true;
 					receiveEmails = resultSet.getFloat("ReceiveEmails");
@@ -248,7 +248,6 @@ public class UserController{
 				try{
 					if (connection != null){
 						resultSet.close();
-						statement.close();
 						connection.close();
 					}
 				} catch (SQLException ex) {
@@ -286,8 +285,6 @@ public class UserController{
 				@RequestParam(value = "loginKey", required = true) String loginKey){
 			boolean success = false;
 			Connection connection = null;
-			ResultSet resultSet = null;
-			Statement statement = null;
 
 			if(receiveEmails == 1.0){
 				receiveEmails = System.nanoTime() + (suspendNotifs * 3600000000000L);
@@ -299,14 +296,17 @@ public class UserController{
 			} else{
 				receiveTexts = System.nanoTime() + 157700000000000000L;
 			}
-
+			
 			try{
 //				String url = "jdbc:sqlite:/var/db/pmr.db";
 				String url = "jdbc:sqlite:../server/db/pmr.db";
 				connection = DriverManager.getConnection(url);
-				String sql = "UPDATE User SET ReceiveTexts = " + receiveTexts + ", ReceiveEmails = " + receiveEmails + " WHERE Username = '" + userName + "';";
-				statement = connection.createStatement();
-				statement.executeUpdate(sql);
+				String sql = "UPDATE User SET ReceiveTexts = ? , ReceiveEmails = ? WHERE Username = ?";
+				PreparedStatement preparedStatement = connection.prepareStatement(sql);
+				preparedStatement.setFloat(1, receiveTexts);
+				preparedStatement.setFloat(2, receiveEmails);
+				preparedStatement.setString(3, userName);
+				preparedStatement.executeUpdate();
 				System.out.println("Connection successful");
 				success = true;
 			} catch (SQLException e){
@@ -315,7 +315,6 @@ public class UserController{
 			} finally {
 				try{
 					if (connection != null){
-						statement.close();
 						connection.close();
 					}
 				} catch (SQLException ex) {
