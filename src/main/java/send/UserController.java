@@ -601,37 +601,38 @@ public class UserController{
 			PlayerList playerList = new PlayerList();
 			ArrayList<Player> players = new ArrayList<Player>();
 			Connection connection = null;
-			ResultSet resultSet = null;
-			Statement statement = null;
 			keywords = keywords.replace("|", "&");
 			keywords = keywords.replace("'", "''");
 			System.out.println(keywords);
 			
-			try{
-//				String url = "jdbc:sqlite:/var/db/pmr.db";
-				String url = "jdbc:sqlite:../server/db/pmr.db";
-				connection = DriverManager.getConnection(url);
-				String sql = "UPDATE User SET Keywords = '" + keywords + "' WHERE Username = '" + username + "';";
-				statement = connection.createStatement();
-				statement.executeUpdate(sql);
-				System.out.println("Connection successful");
-				success = true;
-			} catch (SQLException e){
-				System.out.println(e.getMessage());
-				success = false;
-			} finally {
+			boolean validLoginKey = checkLoginKey(username, loginKey);
+			if(validLoginKey){
 				try{
-					if (connection != null){
-						statement.close();
-						connection.close();
+//					String url = "jdbc:sqlite:/var/db/pmr.db";
+					String url = "jdbc:sqlite:../server/db/pmr.db";
+					connection = DriverManager.getConnection(url);
+					String sql = "UPDATE User SET Keywords = ? WHERE Username = ?";
+					PreparedStatement preparedStatement = connection.prepareStatement(sql);
+					preparedStatement.setString(1, keywords);
+					preparedStatement.setString(2, username);
+					preparedStatement.executeUpdate();	
+					System.out.println("Connection successful");
+					success = true;
+				} catch (SQLException e){
+					System.out.println(e.getMessage());
+					success = false;
+				} finally {
+					try{
+						if (connection != null){
+							connection.close();
+						}
+					} catch (SQLException ex) {
+						System.out.println(ex.getMessage());
 					}
-				} catch (SQLException ex) {
-					System.out.println(ex.getMessage());
 				}
 			}
 
 
-			boolean validLoginKey = checkLoginKey(username, loginKey);
 			
 			ResponseEntity responseEntity;
 			if(success && validLoginKey){
