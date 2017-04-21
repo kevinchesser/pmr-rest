@@ -302,7 +302,7 @@ public class UserController{
 				String url = "jdbc:sqlite:../server/db/pmr.db";
 				connection = DriverManager.getConnection(url);
 				String sql = "UPDATE User SET ReceiveTexts = ? , ReceiveEmails = ? WHERE Username = ?";
-PreparedStatement preparedStatement = connection.prepareStatement(sql);
+				PreparedStatement preparedStatement = connection.prepareStatement(sql);
 				preparedStatement.setFloat(1, receiveTexts);
 				preparedStatement.setFloat(2, receiveEmails);
 				preparedStatement.setString(3, userName);
@@ -746,28 +746,27 @@ PreparedStatement preparedStatement = connection.prepareStatement(sql);
 			boolean success = false;
 			Connection connection = null;
 			ResultSet resultSet = null;
-			Statement statement = null;
 			try{
 //				String url = "jdbc:sqlite:/var/db/pmr.db";
 				String url = "jdbc:sqlite:../server/db/pmr.db";
 				connection = DriverManager.getConnection(url);
-				String sql = "Select * from User WHERE Username='" + userName + "' AND LoginKey='" + loginKey + "';";
-				System.out.println(sql);
-				statement = connection.createStatement();
-				resultSet = statement.executeQuery(sql);
+				String sql = "Select * from User WHERE Username = ? AND LoginKey = ?";
+				PreparedStatement preparedStatement = connection.prepareStatement(sql);
+				preparedStatement.setString(1, userName);
+				preparedStatement.setString(2, loginKey);
+				resultSet = preparedStatement.executeQuery();
 				if(resultSet.next()){
 					success = true;
 				} else{
 					success = false;
 				}
-				System.out.println("Connection successful");
+				System.out.println(" login key Connection successful");
 			} catch (SQLException e){
 				System.out.println(e.getMessage());
 			} finally {
 				try{
 					if (connection != null){
 						resultSet.close();
-						statement.close();
 						connection.close();
 					}
 				} catch (SQLException ex) {
