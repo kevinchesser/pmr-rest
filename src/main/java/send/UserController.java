@@ -543,32 +543,26 @@ public class UserController{
 		@RequestMapping(value="/retrieveFavorites")
 		public ResponseEntity<String> retrieveFavorites(@RequestParam(value="userName", required=true) String userName,
 				@RequestParam(value="loginKey", required=true) String loginKey){
-			
-			////////////////////////////////////////////////
-			
 			boolean success = false;
 			PlayerList playerList = new PlayerList();
 			ArrayList<Player> players = new ArrayList<Player>();
 			Connection connection = null;
 			ResultSet resultSet = null;
-			Statement statement = null;
-			
 			
 			try{
 				String url = "jdbc:sqlite:../server/db/pmr.db";
 				connection = DriverManager.getConnection(url);
-				String sql = "Select * from User WHERE Username='" + userName + "';";
-				statement = connection.createStatement();
-				resultSet = statement.executeQuery(sql);
+				String sql = "Select * from User WHERE Username = ?";
+				PreparedStatement preparedStatement = connection.prepareStatement(sql);
+				preparedStatement.setString(1, userName);
+				resultSet = preparedStatement.executeQuery();
 				if(resultSet.next()){ //for each record in the result set need to iterate over all entries delimited by &
-					System.out.println("Result set is " + resultSet.getString("Keywords"));
 					String[] tokens = resultSet.getString("Keywords").split(Pattern.quote("&"));;
 					for (String player : tokens) {
 						Player aPlayer = new Player("", "", player);
 						players.add(aPlayer);
 					}
 					success = true;
-					
 					playerList.setList(players);
 				} else{
 					success = false;
@@ -580,16 +574,12 @@ public class UserController{
 				try{
 					if (connection != null){
 						resultSet.close();
-						statement.close();
 						connection.close();
 					}
 				} catch (SQLException ex) {
 					System.out.println(ex.getMessage());
 				}
 			}
-			
-			////////////////////////////////////////////
-			
 			
 			boolean validLoginKey = checkLoginKey(userName, loginKey);
 			playerList.setList(players);
