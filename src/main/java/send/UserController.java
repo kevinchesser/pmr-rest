@@ -302,7 +302,7 @@ public class UserController{
 				String url = "jdbc:sqlite:../server/db/pmr.db";
 				connection = DriverManager.getConnection(url);
 				String sql = "UPDATE User SET ReceiveTexts = ? , ReceiveEmails = ? WHERE Username = ?";
-				PreparedStatement preparedStatement = connection.prepareStatement(sql);
+PreparedStatement preparedStatement = connection.prepareStatement(sql);
 				preparedStatement.setFloat(1, receiveTexts);
 				preparedStatement.setFloat(2, receiveEmails);
 				preparedStatement.setString(3, userName);
@@ -341,16 +341,16 @@ public class UserController{
 			boolean success = false;
 			Connection connection = null;
 			ResultSet resultSet = null;
-			Statement statement = null;
 			
 			try{
 				//String url = "jdbc:sqlite:/var/db/pmr.db";
 				String url = "jdbc:sqlite:../server/db/pmr.db";
 				connection = DriverManager.getConnection(url);
-				String sql = "Select * from User WHERE Email='" + email + "';";
-				System.out.println(sql);
-				statement = connection.createStatement();
-				resultSet = statement.executeQuery(sql);
+				String sql = "Select * from User WHERE Email = ?";
+				PreparedStatement preparedStatement = connection.prepareStatement(sql);
+				preparedStatement.setString(1, email);
+				resultSet = preparedStatement.executeQuery();
+
 				if(resultSet.next()){
 					success = true;
 				} else{
@@ -363,7 +363,6 @@ public class UserController{
 				try{
 					if (connection != null){
 						resultSet.close();
-						statement.close();
 						connection.close();
 					}
 				} catch (SQLException ex) {
@@ -379,9 +378,9 @@ public class UserController{
 				String timeString = Long.toString(time);
 				updateResetToken(email, resetToken, timeString);
 
-				GmailService.send(this.service.getService(), email, "pmridontcareifyourespond@gmail.com", "PMR Account Confirmation", 
+				GmailService.send(this.service.getService(), email, "pmridontcareifyourespond@gmail.com", "PMR Password Reset", 
 						"Hello, please click this link to take you to a password reset page" +
-	 					 "\n2f2f2t2d.localtunnel.me/resetpassword?token=" + resetToken + "&email=" + email);
+	 					 "\tokyodrift.localtunnel.me/resetpassword?token=" + resetToken + "&email=" + email);
 
 				responseEntity = new ResponseEntity<>("true", HttpStatus.OK);
 				System.out.println("Sending recovery email to " + email);
@@ -393,6 +392,7 @@ public class UserController{
 			
 			return responseEntity;
 		}
+
 		//TODO:Refactor with backend salting and hashing
 		@RequestMapping(value="/resetpassword")
 		public ResponseEntity<String> resetPassword(@RequestParam(value = "token", required=true)String token,
@@ -407,16 +407,16 @@ public class UserController{
 			boolean secondarySuccess = false;
 			Connection connection = null;
 			ResultSet resultSet = null;
-			Statement statement = null;
 			
 			try{
 				//String url = "jdbc:sqlite:/var/db/pmr.db";
 				String url = "jdbc:sqlite:../server/db/pmr.db";
 				connection = DriverManager.getConnection(url);
-				String sql = "Select ResetExpiration from User WHERE Email='" + email + "';";
-				System.out.println(sql);
-				statement = connection.createStatement();
-				resultSet = statement.executeQuery(sql);
+				String sql = "Select ResetExpiration from User WHERE Email = ?";
+				PreparedStatement preparedStatement = connection.prepareStatement(sql);
+				preparedStatement.setString(1, email);
+				resultSet = preparedStatement.executeQuery();
+
 				if(resultSet.next()){
 					initialSuccess = true;
 					resetString = resultSet.getString("ResetExpiration");
@@ -430,7 +430,6 @@ public class UserController{
 				try{
 					if (connection != null){
 						resultSet.close();
-						statement.close();
 						connection.close();
 					}
 				} catch (SQLException ex) {
@@ -447,15 +446,13 @@ public class UserController{
 						//String url = "jdbc:sqlite:/var/db/pmr.db";
 						String url = "jdbc:sqlite:../server/db/pmr.db";
 						connection = DriverManager.getConnection(url);
-						String sql = "UPDATE User SET PasswordHash = '" + passwordHash + "', PasswordSalt = '" + passwordSalt + "', ResetExpiration = '0' WHERE Email = '" + email + "';";
-						System.out.println(sql);
-						statement = connection.createStatement();
-						statement.executeQuery(sql);
-						/*PreparedStatement preparedStatement = connection.prepareStatement(sql);
-						preparedStatement.setString(1, token);
-						preparedStatement.setString(2, timeExpiration);
-						preparedStatement.setString(3, email);
-						preparedStatement.executeUpdate(); */
+						String sql = "UPDATE User SET PasswordHash = ?, PasswordSalt = ?, ResetExpiration = ? WHERE Email = ?";
+						PreparedStatement preparedStatement = connection.prepareStatement(sql);
+						preparedStatement.setString(1, passwordHash);
+						preparedStatement.setString(2, passwordSalt);
+						preparedStatement.setString(3, "0");
+						preparedStatement.setString(4, email);
+						preparedStatement.executeUpdate();		
 						System.out.println("Connection successful");
 					} catch (SQLException e){
 						System.out.println(e.getMessage());
@@ -463,7 +460,6 @@ public class UserController{
 						try{
 							if (connection != null){
 								resultSet.close();
-								statement.close();
 								connection.close();
 							}
 						} catch (SQLException ex) {
