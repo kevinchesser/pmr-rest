@@ -810,23 +810,17 @@ PreparedStatement preparedStatement = connection.prepareStatement(sql);
 		
 		public void updateResetToken(String email, String token, String timeExpiration){
 			Connection connection = null;
-			Statement statement = null;
-			ResultSet resultSet = null;
-			System.out.println(email + " " + token + " " + timeExpiration);
 			
 			try{
 				//String url = "jdbc:sqlite:/var/db/pmr.db";
 				String url = "jdbc:sqlite:../server/db/pmr.db";
 				connection = DriverManager.getConnection(url);
-				String sql = "UPDATE User SET ResetToken = '" + token + "', ResetExpiration = '" + timeExpiration + "' WHERE Email = '" + email + "';";
-				System.out.println(sql);
-				statement = connection.createStatement();
-				statement.executeQuery(sql);
-				/*PreparedStatement preparedStatement = connection.prepareStatement(sql);
+				String sql = "UPDATE User SET ResetToken = ?, ResetExpiration = ? WHERE Email = ?";
+				PreparedStatement preparedStatement = connection.prepareStatement(sql);
 				preparedStatement.setString(1, token);
 				preparedStatement.setString(2, timeExpiration);
 				preparedStatement.setString(3, email);
-				preparedStatement.executeUpdate(); */
+				preparedStatement.executeUpdate();
 				System.out.println("Connection successful");
 			} catch (SQLException e){
 				System.out.println(e.getMessage());
