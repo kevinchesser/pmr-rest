@@ -701,8 +701,6 @@ public class UserController{
 				@RequestParam(value = "userName", required = true) String username){
 			boolean success = false;
 			Connection connection = null;
-			ResultSet resultSet = null;
-			Statement statement = null;
 			int count;
 			long resetTime = System.nanoTime() + 157700000000000000L;  //add five years in nanoseconds
 			
@@ -710,9 +708,13 @@ public class UserController{
 //				String url = "jdbc:sqlite:/var/db/pmr.db";
 				String url = "jdbc:sqlite:../server/db/pmr.db";
 				connection = DriverManager.getConnection(url);
-				String sql = "UPDATE User SET ReceiveTexts = '" + resetTime + "', ReceiveEmails = '" + resetTime + "' WHERE Username = '" + username + "' AND ConfirmToken='" + confirmationToken + "';";
-				statement = connection.createStatement();
-				count = statement.executeUpdate(sql);
+				String sql = "UPDATE User SET ReceiveTexts = ?, ReceiveEmails = ? WHERE Username = ? AND ConfirmToken = ?";
+				PreparedStatement preparedStatement = connection.prepareStatement(sql);
+				preparedStatement.setFloat(1, resetTime);
+				preparedStatement.setFloat(2, resetTime);
+				preparedStatement.setString(3, username);
+				preparedStatement.setString(4, confirmationToken);
+				count = preparedStatement.executeUpdate();
 				System.out.println("Connection successful");
 				if(count == 1){
 					success = true;
@@ -723,7 +725,6 @@ public class UserController{
 			} finally {
 				try{
 					if (connection != null){
-						statement.close();
 						connection.close();
 					}
 				} catch (SQLException ex) {
@@ -760,7 +761,7 @@ public class UserController{
 				} else{
 					success = false;
 				}
-				System.out.println(" login key Connection successful");
+				System.out.println("Connection successful");
 			} catch (SQLException e){
 				System.out.println(e.getMessage());
 			} finally {
