@@ -30,7 +30,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 
-//@CrossOrigin(origins = "https://tokyodrift.localtunnel.me")
+//@CrossOrigin(origins = "https://peemr.localtunnel.me")
 @CrossOrigin(origins = "*")
 @RestController
 public class UserController{
