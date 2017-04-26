@@ -100,7 +100,7 @@ public class UserController{
 			if(success == true){
 				GmailService.send(this.service.getService(), email, "pmridontcareifyourespond@gmail.com", "PMR Account Confirmation", 
 						"Hello, please click this link to take you to confirm you account so you can start receiving notifications" +
-	 					 "\nhttp://34.208.133.71:8080/confirmAccount?token=" + confirmToken + "&userName=" + userName);
+	 					 "\nhttp://peemr.com:8080/confirmAccount?token=" + confirmToken + "&userName=" + userName);
 			}
 
 			ResponseEntity responseEntity;
@@ -376,7 +376,7 @@ public class UserController{
 
 				GmailService.send(this.service.getService(), email, "pmridontcareifyourespond@gmail.com", "PMR Password Reset", 
 						"Hello, please click this link to take you to a password reset page" +
-	 					 "\nhttp://34.208.133.71:8080/resetpassword?token=" + resetToken + "&email=" + email);
+	 					 "\nhttp://peemr.com:8080/resetpassword?token=" + resetToken + "&email=" + email);
 
 
 				responseEntity = new ResponseEntity<>("true", HttpStatus.OK);
