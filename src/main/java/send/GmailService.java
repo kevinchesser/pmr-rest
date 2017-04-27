@@ -38,7 +38,7 @@ public class GmailService {
 
     /** Directory to store user credentials for this application. */
     private static final java.io.File DATA_STORE_DIR = new java.io.File(
-        System.getProperty("user.home"), ".credentials/gmail-java-quickstart");
+    		"/home/ec2-user/.credentials/gmail-java-quickstart");
 
     /** Global instance of the {@link FileDataStoreFactory}. */
     private static FileDataStoreFactory DATA_STORE_FACTORY;
@@ -93,7 +93,7 @@ public class GmailService {
      */
     public static Credential authorize() throws IOException {
         // Load client secrets.
-    	File initialFile = new File("src/main/resources/client_secret.json");
+    	File initialFile = new File("client_secret.json");
     	InputStream targetStream = new FileInputStream(initialFile);
         InputStream in =
             GmailService.class.getResourceAsStream("/client_secret.json");
