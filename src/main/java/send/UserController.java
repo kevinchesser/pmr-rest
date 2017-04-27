@@ -98,11 +98,11 @@ public class UserController{
 					System.out.println(ex.getMessage());
 				}
 			}
-			
+
 			if(success == true){
 				GmailService.send(this.service.getService(), email, "pmridontcareifyourespond@gmail.com", "PMR Account Confirmation", 
 						"Hello, please click this link to take you to confirm you account so you can start receiving notifications" +
-						  "\n2f2f2t2d.localtunnel.me/confirmAccount?token=" + confirmToken + "&userName=" + userName);
+	 					 "\nhttp://peemr.com:8080/confirmAccount?token=" + confirmToken + "&userName=" + userName);
 			}
 
 			ResponseEntity responseEntity;
@@ -378,7 +378,8 @@ public class UserController{
 
 				GmailService.send(this.service.getService(), email, "pmridontcareifyourespond@gmail.com", "PMR Password Reset", 
 						"Hello, please click this link to take you to a password reset page" +
-	 					 "\tokyodrift.localtunnel.me/resetpassword?token=" + resetToken + "&email=" + email);
+	 					 "\nhttp://peemr.com:8080/resetpassword?token=" + resetToken + "&email=" + email);
+
 
 				responseEntity = new ResponseEntity<>("true", HttpStatus.OK);
 				System.out.println("Sending recovery email to " + email);
