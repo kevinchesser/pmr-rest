@@ -37,7 +37,6 @@ public class UserController{
 
 	private GmailService service = new GmailService();
 	private static final String DB_CONNECTION_STRING = "jdbc:sqlite:../server/db/pmr.db";
-	//private static final String DB_CONNECTION_STRING = "jdbc:sqlite:/var/db/pmr.db";
 	
 		@RequestMapping(value="/signup")
 		public ResponseEntity<String> send(@RequestParam(value="userName", required=true) String userName,
