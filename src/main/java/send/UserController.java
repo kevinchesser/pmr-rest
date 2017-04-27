@@ -406,7 +406,7 @@ public class UserController{
 
 				GmailService.send(this.service.getService(), email, "pmridontcareifyourespond@gmail.com", "PMR Password Reset", 
 						"Hello, please click this link to take you to a password reset page" +
-	 					 "\nhttp://peemr.com:8080/resetpassword?token=" + resetToken + "&email=" + email);
+	 					 "\nhttp://peemr.com/resetPassword?token=" + resetToken + "&email=" + email);
 
 
 				responseEntity = new ResponseEntity<>("true", HttpStatus.OK);
