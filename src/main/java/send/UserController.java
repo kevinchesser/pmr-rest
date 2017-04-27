@@ -158,7 +158,7 @@ public class UserController{
 
 			return responseEntity;
 		}
-		//TODO:Refactor with backend salting and hashing
+
 		@RequestMapping(value="/login")
 		public ResponseEntity<String> login(@RequestParam(value="userName", required=true) String userName,
 				@RequestParam(value="passHash", required=true) String passHash,
@@ -168,10 +168,39 @@ public class UserController{
 			Connection connection = null;
 			ResultSet resultSet = null;
 			float receiveEmails = 0;
+			String serverSalt = "";
+			
 			try{
 				String url = DB_CONNECTION_STRING;
 				connection = DriverManager.getConnection(url);
-				String sql = "Select * from User WHERE Username = ? AND PasswordHash = ?";
+				String sql = "Select ServerPasswordSalt from User WHERE Username = ?";
+				PreparedStatement preparedStatement = connection.prepareStatement(sql);
+				preparedStatement.setString(1, userName);
+				resultSet = preparedStatement.executeQuery();
+				if(resultSet.next()){
+					serverSalt = resultSet.getString("ServerPasswordSalt");
+					System.out.println("Server salt: " + serverSalt);
+				}
+				System.out.println("Connection successful");
+			} catch (SQLException e){
+				System.out.println(e.getMessage());
+			} finally {
+				try{
+					if (connection != null){
+						resultSet.close();
+						connection.close();
+					}
+				} catch (SQLException ex) {
+					System.out.println(ex.getMessage());
+				}
+			}
+		
+			passHash = getPasswordHash(passHash, serverSalt);
+			
+			try{
+				String url = DB_CONNECTION_STRING;
+				connection = DriverManager.getConnection(url);
+				String sql = "Select ReceiveEmails from User WHERE Username = ? AND PasswordHash = ?";
 				PreparedStatement preparedStatement = connection.prepareStatement(sql);
 				preparedStatement.setString(1, userName);
 				preparedStatement.setString(2, passHash);
@@ -391,7 +420,6 @@ public class UserController{
 			return responseEntity;
 		}
 
-		//TODO:Refactor with backend salting and hashing
 		@RequestMapping(value="/resetpassword")
 		public ResponseEntity<String> resetPassword(@RequestParam(value = "token", required=true)String token,
 				@RequestParam(value = "email", required=true) String email,
@@ -435,6 +463,11 @@ public class UserController{
 			}
 			ResponseEntity responseEntity;
 
+			String[] values = new String[2]; //0 - salt, 1 - hash
+			values = getPasswordHash(passwordHash);
+			passwordHash = values[1];
+			String saltString = values[0];
+			
 			if(initialSuccess){
 				long resetTime = Long.parseLong(resetString);
 				if(currentTime - resetTime < 0){
@@ -442,12 +475,13 @@ public class UserController{
 					try{
 						String url = DB_CONNECTION_STRING;
 						connection = DriverManager.getConnection(url);
-						String sql = "UPDATE User SET PasswordHash = ?, PasswordSalt = ?, ResetExpiration = ? WHERE Email = ?";
+						String sql = "UPDATE User SET PasswordHash = ?, PasswordSalt = ?, ResetExpiration = ?, ServerPasswordSalt WHERE Email = ?";
 						PreparedStatement preparedStatement = connection.prepareStatement(sql);
 						preparedStatement.setString(1, passwordHash);
 						preparedStatement.setString(2, passwordSalt);
 						preparedStatement.setString(3, "0");
-						preparedStatement.setString(4, email);
+						preparedStatement.setString(4, saltString);
+						preparedStatement.setString(5, email);
 						preparedStatement.executeUpdate();		
 						System.out.println("Connection successful");
 					} catch (SQLException e){
@@ -825,9 +859,14 @@ public class UserController{
 			String backEndHash = hash.sha256(saltHash, HEX);
 			values[0] = saltString; //Position 0 - Salt for Server
 			values[1] = backEndHash; //Position 1 - Hash generated on backEND
-			System.out.println(values[0]);
-			System.out.println(values[1]);
 			return values;
+		}
+		
+		public String getPasswordHash(String frontEndHash, String backEndSalt){
+			Hash hash = new Hash();
+			String saltHash = frontEndHash + backEndSalt;
+			String backEndHash = hash.sha256(saltHash, HEX);
+			return backEndHash;
 		}
 
 }
