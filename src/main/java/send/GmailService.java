@@ -38,7 +38,8 @@ public class GmailService {
 
     /** Directory to store user credentials for this application. */
     private static final java.io.File DATA_STORE_DIR = new java.io.File(
-	"/home/ec2-user/.credentials/gmail-java-quickstart");
+    		"/home/ec2-user/.credentials/gmail-java-quickstart");
+
 
     /** Global instance of the {@link FileDataStoreFactory}. */
     private static FileDataStoreFactory DATA_STORE_FACTORY;
