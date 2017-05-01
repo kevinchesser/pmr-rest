@@ -36,7 +36,8 @@ import java.util.regex.Pattern;
 public class UserController{
 
 	private GmailService service = new GmailService();
-	private static final String DB_CONNECTION_STRING = "jdbc:sqlite:../server/db/pmr.db";
+	private static final String USER_DB_CONNECTION_STRING = "jdbc:sqlite:../server/db/user.db";
+	private static final String PLAYER_DB_CONNECTION_STRING = "jdbc:sqlite:../server/db/player.db";
 	
 		@RequestMapping(value="/signup")
 		public ResponseEntity<String> send(@RequestParam(value="userName", required=true) String userName,
@@ -61,7 +62,7 @@ public class UserController{
 			long resetTime = System.nanoTime() + 157700000000000000L;  //add one year in nanoseconds
 			long loginResetTime = System.nanoTime() + 3600000000000L;  //add one hour in nanoseconds
 			try{
-				String url = DB_CONNECTION_STRING;
+				String url = USER_DB_CONNECTION_STRING;
 				connection = DriverManager.getConnection(url);
 				String sql = "INSERT INTO User(Username, Email, PasswordHash, PasswordSalt, PhoneNumber, Keywords, "
 						+ "ResetToken, ResetExpiration, ReceiveTexts, ReceiveEmails, LoginKey, LoginKeyExpiration, ServerPasswordSalt, "
@@ -122,7 +123,7 @@ public class UserController{
 			ResultSet resultSet = null;
 			Statement statement = null;
 			try{
-				String url = DB_CONNECTION_STRING;
+				String url = USER_DB_CONNECTION_STRING;
 				connection = DriverManager.getConnection(url);
 				statement = connection.createStatement();
 				String sql = "Select * from User WHERE Username = ?";
@@ -171,7 +172,7 @@ public class UserController{
 			String serverSalt = "";
 			
 			try{
-				String url = DB_CONNECTION_STRING;
+				String url = USER_DB_CONNECTION_STRING;
 				connection = DriverManager.getConnection(url);
 				String sql = "Select ServerPasswordSalt from User WHERE Username = ?";
 				PreparedStatement preparedStatement = connection.prepareStatement(sql);
@@ -198,7 +199,7 @@ public class UserController{
 			passHash = getPasswordHash(passHash, serverSalt);
 			
 			try{
-				String url = DB_CONNECTION_STRING;
+				String url = USER_DB_CONNECTION_STRING;
 				connection = DriverManager.getConnection(url);
 				String sql = "Select ReceiveEmails from User WHERE Username = ? AND PasswordHash = ?";
 				PreparedStatement preparedStatement = connection.prepareStatement(sql);
@@ -255,7 +256,7 @@ public class UserController{
 			float receiveTexts = 0;
 			NotificationSettings notificationSettings = new NotificationSettings();
 			try{
-				String url = DB_CONNECTION_STRING;
+				String url = USER_DB_CONNECTION_STRING;
 				connection = DriverManager.getConnection(url);
 				String sql = "Select ReceiveEmails, ReceiveTexts from User WHERE Username = ? AND LoginKey = ?";
 				PreparedStatement preparedStatement = connection.prepareStatement(sql);
@@ -326,7 +327,7 @@ public class UserController{
 			}
 			
 			try{
-				String url = DB_CONNECTION_STRING;
+				String url = USER_DB_CONNECTION_STRING;
 				connection = DriverManager.getConnection(url);
 				String sql = "UPDATE User SET ReceiveTexts = ? , ReceiveEmails = ? WHERE Username = ?";
 				PreparedStatement preparedStatement = connection.prepareStatement(sql);
@@ -370,7 +371,7 @@ public class UserController{
 			ResultSet resultSet = null;
 			
 			try{
-				String url = DB_CONNECTION_STRING;
+				String url = USER_DB_CONNECTION_STRING;
 				connection = DriverManager.getConnection(url);
 				String sql = "Select * from User WHERE Email = ?";
 				PreparedStatement preparedStatement = connection.prepareStatement(sql);
@@ -435,7 +436,7 @@ public class UserController{
 			
 			try{
 				//String url = "jdbc:sqlite:/var/db/pmr.db";
-				String url = DB_CONNECTION_STRING;
+				String url = USER_DB_CONNECTION_STRING;
 				connection = DriverManager.getConnection(url);
 				String sql = "Select ResetExpiration from User WHERE Email = ?";
 				PreparedStatement preparedStatement = connection.prepareStatement(sql);
@@ -473,7 +474,7 @@ public class UserController{
 				if(currentTime - resetTime < 0){
 					System.out.println("token still valid");
 					try{
-						String url = DB_CONNECTION_STRING;
+						String url = USER_DB_CONNECTION_STRING;
 						connection = DriverManager.getConnection(url);
 						String sql = "UPDATE User SET PasswordHash = ?, PasswordSalt = ?, ResetExpiration = ?, ServerPasswordSalt WHERE Email = ?";
 						PreparedStatement preparedStatement = connection.prepareStatement(sql);
@@ -521,7 +522,7 @@ public class UserController{
 			
 			
 			try{
-				String url = DB_CONNECTION_STRING;
+				String url = PLAYER_DB_CONNECTION_STRING;
 				connection = DriverManager.getConnection(url);
 				String sql = "Select * from Player;";
 				statement = connection.createStatement();
@@ -579,7 +580,7 @@ public class UserController{
 			ResultSet resultSet = null;
 			
 			try{
-				String url = DB_CONNECTION_STRING;
+				String url = USER_DB_CONNECTION_STRING;
 				connection = DriverManager.getConnection(url);
 				String sql = "Select * from User WHERE Username = ?";
 				PreparedStatement preparedStatement = connection.prepareStatement(sql);
@@ -637,7 +638,7 @@ public class UserController{
 			boolean validLoginKey = checkLoginKey(username, loginKey);
 			if(validLoginKey){
 				try{
-					String url = DB_CONNECTION_STRING;
+					String url = USER_DB_CONNECTION_STRING;
 					connection = DriverManager.getConnection(url);
 					String sql = "UPDATE User SET Keywords = ? WHERE Username = ?";
 					PreparedStatement preparedStatement = connection.prepareStatement(sql);
@@ -680,7 +681,7 @@ public class UserController{
 			Connection connection = null;
 			
 			try{
-				String url = DB_CONNECTION_STRING;
+				String url = USER_DB_CONNECTION_STRING;
 				connection = DriverManager.getConnection(url);
 				String sql = "UPDATE User SET LoginKey = ? WHERE Username = ? AND LoginKey = ?";
 				PreparedStatement preparedStatement = connection.prepareStatement(sql);
@@ -723,7 +724,7 @@ public class UserController{
 			long resetTime = System.nanoTime() + 157700000000000000L;  //add five years in nanoseconds
 			
 			try{
-				String url = DB_CONNECTION_STRING;
+				String url = USER_DB_CONNECTION_STRING;
 				connection = DriverManager.getConnection(url);
 				String sql = "UPDATE User SET ReceiveTexts = ?, ReceiveEmails = ? WHERE Username = ? AND ConfirmToken = ?";
 				PreparedStatement preparedStatement = connection.prepareStatement(sql);
@@ -765,7 +766,7 @@ public class UserController{
 			Connection connection = null;
 			ResultSet resultSet = null;
 			try{
-				String url = DB_CONNECTION_STRING;
+				String url = USER_DB_CONNECTION_STRING;
 				connection = DriverManager.getConnection(url);
 				String sql = "Select * from User WHERE Username = ? AND LoginKey = ?";
 				PreparedStatement preparedStatement = connection.prepareStatement(sql);
@@ -799,7 +800,7 @@ public class UserController{
 			long loginResetTime = System.nanoTime() + 3600000000000L;  //add one hour in nanoseconds
 
 			try{
-				String url = DB_CONNECTION_STRING;
+				String url = USER_DB_CONNECTION_STRING;
 				connection = DriverManager.getConnection(url);
 				String sql = "UPDATE User SET LoginKey = ?, LoginKeyExpiration = ? WHERE Username = ?";
 				PreparedStatement preparedStatement = connection.prepareStatement(sql);
@@ -827,7 +828,7 @@ public class UserController{
 			Connection connection = null;
 			
 			try{
-				String url = DB_CONNECTION_STRING;
+				String url = USER_DB_CONNECTION_STRING;
 				connection = DriverManager.getConnection(url);
 				String sql = "UPDATE User SET ResetToken = ?, ResetExpiration = ? WHERE Email = ?";
 				PreparedStatement preparedStatement = connection.prepareStatement(sql);
