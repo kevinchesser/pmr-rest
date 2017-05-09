@@ -511,8 +511,7 @@ public class UserController{
 		
 		
 		@RequestMapping(value="/retrievePlayers") //Encode into UTF-8
-		public ResponseEntity<String> retrievePlayers(@RequestParam (value="userName", required = true) String userName, 
-				@RequestParam(value="loginKey", required=true) String loginKey){
+		public ResponseEntity<String> retrievePlayers(){
 			boolean success = false;
 			PlayerList playerList = new PlayerList();
 			ArrayList<Player> players = new ArrayList<Player>();
@@ -556,10 +555,9 @@ public class UserController{
 				}
 			}
 
-			boolean validLoginKey = checkLoginKey(userName, loginKey);
 
 			ResponseEntity responseEntity;
-			if(success && validLoginKey){
+			if(success){
 				Gson gson = new Gson();
 				responseEntity = new ResponseEntity<>(gson.toJson(playerList), HttpStatus.OK);
 			}
