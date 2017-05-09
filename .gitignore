@@ -17,3 +17,4 @@ README.html
 .idea
 .DS_Store
 src/main/resources/
+client_secret.json
