@@ -1,3 +1,5 @@
+before_install:
+    - rm gradle.properties
 sudo: false
 language: java
 jdk:
