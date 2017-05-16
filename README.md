@@ -8,6 +8,7 @@
         \/_/                                  
 
 [Live site](http://peemr.com)
+
 [![Build Status](https://travis-ci.org/kevinchesser/pmr-rest.svg?branch=master)](https://travis-ci.org/kevinchesser/pmr-rest)
 
 This repo contains the code for all of the interactions with the database for pmr. It is written as a Spring rest controller and connects to a SQLite3 database. It uses Kalium for java bindings to the libsodium crypto library.
